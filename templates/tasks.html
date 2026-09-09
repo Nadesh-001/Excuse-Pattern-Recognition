@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Active Tasks — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Tasks{% endblock %}
+
+{% block extra_head %}
+<style>
+    .tasks-main {
+        padding: 32px 24px;
+        max-width: 1320px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .tasks-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+
+    .tasks-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    /* Filter Bar (Glassmorphism Panel) */
+    .glass-filters {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        margin-bottom: 28px;
+        box-shadow: var(--glass-shadow);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .glass-filters select {
+        width: auto !important;
+        min-width: 140px;
+    }
+
+    .task-bento-card {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        box-shadow: var(--glass-shadow);
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .task-bento-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--border-hover);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tasks-main">
+    <div class="tasks-header">
+        <div>
+            <h1>Central Task Registry</h1>
+            <p style="font-size: 13px; color: var(--text-muted);">View, track, and analyze excuse behavior patterns across project tasks</p>
+        </div>
+        {% if session.get('user_role') in ['manager', 'admin'] %}
+        <a href="{{ url_for('tasks.new_task') }}" class="clay-btn clay-btn-primary">
+            <i data-lucide="plus" style="width:14px;"></i> Create New Task
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Glass Filter Bar -->
+    <form class="glass-filters" method="GET" action="{{ url_for('tasks.tasks') }}">
+        <div style="position:relative; flex:1; min-width: 220px;">
+            <i data-lucide="search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); width:15px; color:var(--text-muted);"></i>
+            <input type="text" name="q" placeholder="Search tasks by title or keyword..." value="{{ request.args.get('q', '') }}" style="padding-left:40px;">
+        </div>
+
+        <select name="status" onchange="this.form.submit()">
+            <option value="All" {{ 'selected' if request.args.get('status')=='All' }}>All Statuses</option>
+            <option value="Pending" {{ 'selected' if request.args.get('status')=='Pending' }}>Pending</option>
+            <option value="In Progress" {{ 'selected' if request.args.get('status')=='In Progress' }}>In Progress</option>
+            <option value="Completed" {{ 'selected' if request.args.get('status')=='Completed' }}>Completed</option>
+            <option value="Delayed" {{ 'selected' if request.args.get('status')=='Delayed' }}>Delayed</option>
+        </select>
+
+        <select name="priority" onchange="this.form.submit()">
+            <option value="All" {{ 'selected' if request.args.get('priority')=='All' }}>All Priorities</option>
+            <option value="High" {{ 'selected' if request.args.get('priority')=='High' }}>High Priority</option>
+            <option value="Medium" {{ 'selected' if request.args.get('priority')=='Medium' }}>Medium Priority</option>
+            <option value="Low" {{ 'selected' if request.args.get('priority')=='Low' }}>Low Priority</option>
+        </select>
+
+        {% if request.args.get('q') or request.args.get('status') or request.args.get('priority') %}
+        <a href="{{ url_for('tasks.tasks') }}" class="clay-btn" style="padding: 6px 12px; font-size: 11px;">Reset Filters</a>
+        {% endif %}
+    </form>
+
+    <!-- Bento Cards Grid for Tasks -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+        {% if tasks %}
+        {% for task in tasks %}
+        <a href="{{ url_for('tasks.task_details', task_id=task.id) }}" class="task-bento-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <span class="clay-badge" style="font-size: 10px;">ID #{{ task.id|string|truncate(8, True, '')|upper }}</span>
+                <span class="clay-badge" style="{% if task.priority == 'High' %}color:var(--danger); border-color:var(--danger);{% elif task.priority == 'Medium' %}color:var(--warning); border-color:var(--warning);{% else %}color:var(--primary);{% endif %}">
+                    {{ task.priority }}
+                </span>
+            </div>
+
+            <h3 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">{{ task.title }}</h3>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; flex: 1;">
+                {{ task.description[:140] if task.description else 'No detailed description.' }}...
+            </p>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid var(--border);">
+                <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); display: flex; gap: 14px;">
+                    <span><i data-lucide="calendar" style="width:13px; vertical-align:middle;"></i> {{ task.deadline }}</span>
+                    <span><i data-lucide="shield-alert" style="width:13px; vertical-align:middle;"></i> Risk: <strong>{{ task.risk_score or '0' }}%</strong></span>
+                </div>
+                <span class="clay-btn" style="padding: 4px 10px; font-size: 11px; color: var(--primary);">
+                    Inspect →
+                </span>
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
+        <div class="glass-panel" style="grid-column: 1 / -1; padding: 60px; text-align: center;">
+            <i data-lucide="inbox" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 16px;"></i>
+            <h3 style="font-size: 18px; margin-bottom: 6px;">No Tasks Found</h3>
+            <p style="font-size: 13px; color: var(--text-muted);">Try adjusting your search criteria or create a new task</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+{% endblock %}

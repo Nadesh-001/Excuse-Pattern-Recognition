@@ -1,0 +1,106 @@
+<div
+    class="task-card neon-border-{{ 'admin' if session.get('user_role') == 'admin' else ('manager' if session.get('user_role') == 'manager' else 'employee') }}">
+
+    <!-- Header: Status Badge -->
+    <div class="task-card__header">
+        <div
+            class="task-card__status {% if task.status == 'Completed' %}status-success{% elif task.status == 'Delayed' %}status-danger{% else %}status-warning{% endif %}">
+            {% if task.status == 'Completed' %}
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            {% elif task.status == 'Delayed' %}
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            {% else %}
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            {% endif %}
+            <span>{{ task.status }}</span>
+        </div>
+    </div>
+
+    <!-- Title & Description -->
+    <h2 class="task-card__title">{{ task.title }}</h2>
+    <p class="task-card__desc">{{ task.description or "No description provided" }}</p>
+
+    <!-- Metadata Row -->
+    <div class="task-card__meta">
+        <div class="meta-item">
+            <span class="meta-label">Priority:</span>
+            <span
+                class="priority-tag {% if task.priority == 'High' %}priority-high{% elif task.priority == 'Medium' %}priority-med{% else %}priority-low{% endif %}">
+                {{ task.priority }}
+            </span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Deadline:</span>
+            <span class="meta-value">{{ task.deadline }}</span>
+        </div>
+        {% if session.get('user_role') != 'employee' %}
+        <div class="meta-item">
+            <span class="meta-label">Assigned:</span>
+            <span class="meta-value link-text">{{ task.assigned_to_email or task.assigned_to }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer Grid: Metrics -->
+    <div class="task-card__footer">
+        <div class="metric-box">
+            <div class="metric-label">
+                <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Estimated
+            </div>
+            <div class="metric-value">{{ task.estimated_minutes }}m</div>
+        </div>
+
+        <div class="metric-box">
+            <div class="metric-label">
+                <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                Elapsed
+            </div>
+            <div class="metric-value">{{ task.elapsed_time }}</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="task-card__actions">
+        <a href="{{ url_for('tasks.task_details', task_id=task.id) }}" class="btn-secondary btn-sm">
+            <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            View Details
+        </a>
+
+        {% if session.get('user_role') in ['manager', 'admin'] or task.assigned_to == session.get('user_id') %}
+        <form method="POST" action="{{ url_for('tasks.delete_task', task_id=task.id) }}" style="margin: 0;"
+            onsubmit="return confirm('Delete this task?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn-ghost--danger btn-sm">
+                <svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+</div>

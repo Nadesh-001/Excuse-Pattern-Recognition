@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Task Details — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Tasks / {{ task.id|string|truncate(8, True, '') }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .task-det-container {
+        padding: 32px 24px;
+        max-width: 1320px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .det-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 28px;
+    }
+
+    .det-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .det-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .delay-card-bento {
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(11, 15, 25, 0.75);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="task-det-container">
+
+    <!-- Header -->
+    <div class="det-header">
+        <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span class="clay-badge">ID #{{ task.id|string|truncate(12, True, '')|upper }}</span>
+                <span class="clay-badge" style="color: var(--primary);">{{ task.status|upper }}</span>
+            </div>
+            <h1 style="font-size: 28px; font-weight: 800; color: var(--text-primary);">{{ task.title }}</h1>
+        </div>
+        <a href="{{ url_for('tasks.tasks') }}" class="clay-btn">
+            <i data-lucide="chevron-left" style="width:14px;"></i> Back to Tasks
+        </a>
+    </div>
+
+    <div class="det-grid">
+
+        <!-- Main Column -->
+        <div>
+
+            <!-- Task Overview Bento Card -->
+            <div class="bento-card" style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="file-text" style="width:18px; color:var(--primary);"></i>
+                        <h3 style="font-size: 16px;">Task Specification</h3>
+                    </div>
+                    <span class="clay-badge" style="{% if task.priority == 'High' %}color:var(--danger); border-color:var(--danger);{% elif task.priority == 'Medium' %}color:var(--warning); border-color:var(--warning);{% else %}color:var(--success);{% endif %}">
+                        {{ task.priority }} Priority
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+                    <div style="padding: 14px; background: var(--bg-inset); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                        <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">Deadline</div>
+                        <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">{{ task.deadline }}</div>
+                    </div>
+                    <div style="padding: 14px; background: var(--bg-inset); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                        <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">Risk Score</div>
+                        <div style="font-size: 16px; font-weight: 700; color: {% if (task.risk_score|default(0)) > 70 %}var(--danger){% else %}var(--success){% endif %}; margin-top: 4px;">
+                            {{ task.risk_score|default(0) }}% Risk
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Description</div>
+                <div style="background: var(--bg-inset); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border); color: var(--text-secondary); line-height: 1.6; font-size: 14px; margin-bottom: 24px;">
+                    {{ task.description or "No description provided for this task." }}
+                </div>
+
+                {% if task.status != 'Completed' %}
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid var(--border);">
+                    {% if task.status != 'Delayed' %}
+                    <form method="POST" action="{{ url_for('tasks.complete_task', task_id=task.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button type="submit" class="clay-btn clay-btn-primary">
+                            <i data-lucide="check-circle" style="width:14px;"></i> Mark Completed
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <button onclick="document.getElementById('modal-delay').style.display='flex'" class="clay-btn" style="color: var(--danger); border-color: var(--danger);">
+                        <i data-lucide="alert-triangle" style="width:14px;"></i> Report Delay
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Delay History -->
+            {% if delays %}
+            <div class="bento-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+                    <i data-lucide="history" style="width:18px; color:var(--primary);"></i>
+                    <h3 style="font-size: 16px;">Submitted Delay Log</h3>
+                </div>
+
+                {% for delay in delays %}
+                {% set snap = delay.ai_analysis_json | from_json if delay.ai_analysis_json is string else delay.ai_analysis_json %}
+                <div class="delay-card-bento">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div>
+                            <span class="clay-badge" style="font-size: 10px;">Submitted: {{ delay.submitted_at }}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="clay-badge" style="{% if delay.risk_level == 'High' %}color:var(--danger);{% else %}color:var(--success);{% endif %}">
+                                {{ delay.risk_level }} Risk
+                            </span>
+                            <form action="{{ url_for('tasks.delete_delay', delay_id=delay.id, task_id=task.id) }}" method="POST" onsubmit="return confirm('Delete this delay record?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="clay-btn" style="padding: 4px 8px; color: var(--danger);" title="Delete Record">
+                                    <i data-lucide="trash-2" style="width:12px;"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 14px; font-style: italic; color: var(--text-primary); padding: 12px; background: var(--bg-surface); border-radius: var(--radius-sm); border-left: 3px solid var(--primary); margin-bottom: 14px;">
+                        "{{ delay.reason_text }}"
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <span class="clay-badge">Authenticity: {{ delay.score_authenticity or 0 }}%</span>
+                        <span class="clay-badge">Confidence: {{ (snap.get('confidence') or snap.get('confidence_score', 90))|int if snap and snap is mapping else 90 }}%</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Side Column (AI Gauges & Metrics) -->
+        <div>
+            <div class="bento-card" style="margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <i data-lucide="cpu" style="width:18px; color:var(--primary);"></i>
+                    <h3 style="font-size: 16px;">AI Intelligence Metrics</h3>
+                </div>
+
+                {% if intelligence is defined and intelligence.intelligence_available %}
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+                    <div style="text-align: center; padding: 12px 6px; background: var(--bg-inset); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                        <div style="font-size: 18px; font-weight: 800; color: var(--danger);">{{ intelligence.neural_console.task_risk.score|default(0)|int }}</div>
+                        <div style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted);">RISK</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px 6px; background: var(--bg-inset); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                        <div style="font-size: 18px; font-weight: 800; color: var(--primary);">{{ intelligence.neural_console.stability.score|default(100)|int }}%</div>
+                        <div style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted);">RELIABILITY</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px 6px; background: var(--bg-inset); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                        <div style="font-size: 18px; font-weight: 800; color: var(--success);">{{ intelligence.neural_console.integrity.score|default(100)|int }}</div>
+                        <div style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted);">COMPLIANCE</div>
+                    </div>
+                </div>
+
+                <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Recommendations</div>
+                <ul style="padding: 0; list-style: none;">
+                    {% for rec in intelligence.recommendations %}
+                    <li style="display: flex; gap: 8px; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary);">
+                        <i data-lucide="check-circle-2" style="width:14px; color:var(--success); flex-shrink:0;"></i>
+                        {{ rec }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px;">
+                    Standard operational parameters. No elevated risk vectors detected.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal: Submit Delay -->
+<div id="modal-delay" class="modal-overlay">
+    <div class="bento-card" style="width: 480px; max-width: 100%; border-color: var(--danger);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <i data-lucide="alert-triangle" style="width:20px; color:var(--danger);"></i>
+            <h2 style="font-size: 20px; font-weight: 800;">Report Task Delay</h2>
+        </div>
+
+        <form method="POST" action="{{ url_for('tasks.submit_delay', task_id=task.id) }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div style="margin-bottom: 16px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 6px;">Reason for Delay</label>
+                <textarea name="reason" rows="4" placeholder="Provide detailed explanation for delay..." required></textarea>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 6px;">Evidence File (Optional)</label>
+                <input type="file" name="proof" style="padding: 6px;" />
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="clay-btn clay-btn-primary" style="flex: 1; background: var(--danger) !important; box-shadow: none !important;">
+                    Submit Delay Report
+                </button>
+                <button type="button" onclick="document.getElementById('modal-delay').style.display='none'" class="clay-btn">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) lucide.createIcons();
+        const modal = document.getElementById('modal-delay');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.style.display = 'none';
+            });
+        }
+    });
+</script>
+{% endblock %}

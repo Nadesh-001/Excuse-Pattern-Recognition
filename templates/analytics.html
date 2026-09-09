@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Intelligence — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Analytics{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid var(--border-muted);
+        background: var(--bg-surface);
+    }
+
+    .page-title {
+        font-family: 'Cal Sans', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--neon-white);
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        padding: 24px 32px;
+    }
+
+    .executive-panel {
+        grid-column: span 1;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .executive-panel.highlight-blue {
+        border-color: var(--neon-blue);
+        background: rgba(88, 166, 255, 0.05);
+    }
+
+    .gauge-container {
+        height: 120px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 16px 0;
+    }
+
+    .gauge-svg {
+        transform: rotate(-90deg);
+    }
+
+    .gauge-circle {
+        fill: none;
+        stroke: var(--bg-inset);
+        stroke-width: 8;
+        stroke-linecap: round;
+    }
+
+    .gauge-progress {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        stroke-dasharray: 251.2;
+        stroke-dashoffset: 251.2;
+        transition: stroke-dashoffset 1s ease;
+    }
+
+    .insight-dot.dot-critical {
+        background: var(--neon-red);
+    }
+
+    .insight-dot.dot-warning {
+        background: var(--neon-yellow);
+    }
+
+    .insight-dot.dot-info {
+        background: var(--neon-blue);
+    }
+
+    .insight-dot.dot-positive {
+        background: var(--neon-green);
+    }
+
+    .gauge-value {
+        position: absolute;
+        font-family: var(--font-mono);
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--neon-white);
+    }
+
+    .main-analytics-content {
+        grid-column: span 4;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        padding: 0 32px 32px;
+    }
+
+    .chart-container {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 24px;
+    }
+
+    .insight-card {
+        background: var(--bg-inset);
+        border: 1px solid var(--border-muted);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        height: 100%;
+        border-left: 4px solid var(--neon-blue);
+    }
+
+    .data-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 4px;
+    }
+
+    .summary-box {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        font-style: italic;
+        border-left: 2px solid var(--border-muted);
+        padding-left: 16px;
+        margin-top: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <div class="page-title">Behavioral Intelligence</div>
+            <div class="data-label">TEAM_RELIABILITY_METRICS_v2.4</div>
+        </div>
+        <a href="{{ url_for('export.export_analytics') }}" class="btn btn-default" style="padding: 8px 16px;">Export
+            System Log</a>
+    </div>
+</div>
+
+<div class="analytics-grid">
+    <div class="executive-panel">
+        <div class="data-label">WRS_COEFFICIENT</div>
+        <div class="gauge-container">
+            <svg class="gauge-svg" width="100" height="100">
+                <circle class="gauge-circle" cx="50" cy="50" r="40" />
+                <circle class="gauge-progress js-gauge" cx="50" cy="50" r="40" data-value="{{ stats.wrs_score }}"
+                    style="stroke: var(--neon-blue);" />
+            </svg>
+            <div class="gauge-value">{{ stats.wrs_score }}</div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; text-align: center; color: var(--neon-blue);">
+            RELIABILITY_SIGNAL</div>
+    </div>
+
+    <div class="executive-panel highlight-blue">
+        <div class="data-label">AUTH_CONSENSUS</div>
+        <div class="gauge-container">
+            <svg class="gauge-svg" width="100" height="100">
+                <circle class="gauge-circle" cx="50" cy="50" r="40" />
+                <circle class="gauge-progress js-gauge" cx="50" cy="50" r="40" data-value="{{ stats.avg_auth_score }}"
+                    style="stroke: var(--neon-green);" />
+            </svg>
+            <div class="gauge-value">{{ stats.avg_auth_score }}</div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; text-align: center; color: var(--neon-green);">
+            AUTHENTICITY_AVG</div>
+    </div>
+
+    <div class="executive-panel">
+        <div class="data-label">AVOIDANCE_VECTORS</div>
+        <div class="gauge-container">
+            <svg class="gauge-svg" width="100" height="100">
+                <circle class="gauge-circle" cx="50" cy="50" r="40" />
+                <circle class="gauge-progress js-gauge" cx="50" cy="50" r="40"
+                    data-value="{{ stats.avg_avoidance_score }}" style="stroke: var(--neon-red);" />
+            </svg>
+            <div class="gauge-value">{{ stats.avg_avoidance_score }}</div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; text-align: center; color: var(--neon-red);">
+            DELAY_INDEX</div>
+    </div>
+
+    <div class="executive-panel">
+        <div class="data-label">NEURAL_CONFIDENCE</div>
+        {% set conf = stats.ai.confidence.score if stats.ai else 0 %}
+        <div class="gauge-container">
+            <svg class="gauge-svg" width="100" height="100">
+                <circle class="gauge-circle" cx="50" cy="50" r="40" />
+                <circle class="gauge-progress js-gauge" cx="50" cy="50" r="40" data-value="{{ conf }}"
+                    style="stroke: var(--neon-yellow);" />
+            </svg>
+            <div class="gauge-value">{{ conf }}</div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; text-align: center; color: var(--neon-yellow);">
+            PRECISION_LOCK</div>
+    </div>
+</div>
+
+<div class="main-analytics-content">
+    <div class="chart-container">
+        <div class="data-label">Temporal Drift Analysis</div>
+        <div id="trend-chart" style="height: 300px; margin-top: 16px;"></div>
+    </div>
+
+    <div class="insight-card">
+        <div class="data-label">Executive AI Insight</div>
+        <div class="summary-box">
+            {{ executive_summary or "Insufficient neural data to generate a synthesis of team performance. Deploy more
+            protocols to activate analysis." }}
+        </div>
+
+        <div class="data-label" style="margin-top: 32px; margin-bottom: 12px;">Active Risk Signals</div>
+        {% if ai_insights %}
+        {% for insight in ai_insights %}
+        <div class="insight-item" style="margin-bottom: 12px;">
+            <div class="insight-dot dot-{{ insight.severity or 'info' }}"></div>
+            <div style="font-size: 12px; color: var(--text-secondary);">{{ insight.text }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-muted" style="font-size: 12px; font-style: italic;">No critical drift detected in current
+            cycle.</div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- PLOTLY SCRIPTS -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<div id="graphs-data-store" style="display:none;" data-graphs='{{ graphs | tojson | safe }}'></div>
+
+<script>
+    (function () {
+        const store = document.getElementById('graphs-data-store');
+        if (!store) return;
+        try {
+            const graphs = JSON.parse(store.dataset.graphs);
+            const trendData = graphs.trend_over_time;
+
+            const layout = {
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#ffffff', family: 'var(--font-mono)', size: 10 },
+                xaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false },
+                yaxis: { gridcolor: 'rgba(255,255,255,0.05)', zeroline: false },
+                margin: { t: 10, b: 40, l: 40, r: 10 },
+                showlegend: false
+            };
+
+            if (trendData) {
+                Plotly.newPlot('trend-chart', trendData.data, {
+                    ...trendData.layout,
+                    ...layout,
+                    height: 300
+                }, { responsive: true, displayModeBar: false });
+            }
+
+            // Animate gauges
+            document.querySelectorAll('.js-gauge').forEach(gauge => {
+                const val = parseFloat(gauge.dataset.value);
+                const offset = 251.2 - (251.2 * val / 100);
+                setTimeout(() => {
+                    gauge.style.strokeDashoffset = offset;
+                }, 100);
+            });
+        } catch (e) {
+            console.error("Neural Graph Initialization Error:", e);
+        }
+    })();
+</script>
+{% endblock %}

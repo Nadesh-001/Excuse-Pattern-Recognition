@@ -1,0 +1,35 @@
+# Web Framework
+Flask>=3.0.0
+Flask-WTF>=1.2.0
+Flask-Login>=0.6.3
+email-validator
+blinker
+gunicorn
+
+# Database (AWS RDS — PostgreSQL)
+psycopg2-binary>=2.9.9
+
+# AI / ML (Statistical Quant-Engine)
+numpy
+pandas
+scikit-learn
+joblib
+textblob
+
+# Chatbot (Groq via HTTP)
+requests
+
+# Utilities
+python-dotenv
+python-dateutil
+typing-extensions
+
+# Security
+passlib
+bcrypt>=4.0.1
+cryptography
+flask-limiter
+
+# Export
+python-docx
+fpdf2

@@ -1,0 +1,66 @@
+<div class="analytics-subnav">
+    <a href="{{ url_for('analytics.analytics_overview') }}"
+        class="subnav-item {{ 'active' if active_tab == 'overview' }}">
+        <i data-lucide="bar-chart-2" class="subnav-icon"></i>
+        <span>Overview</span>
+    </a>
+    <a href="{{ url_for('analytics.analytics_ai') }}" class="subnav-item {{ 'active' if active_tab == 'ai' }}">
+        <i data-lucide="cpu" class="subnav-icon"></i>
+        <span>AI Intelligence</span>
+    </a>
+    <a href="{{ url_for('analytics.analytics_trends') }}" class="subnav-item {{ 'active' if active_tab == 'trends' }}">
+        <i data-lucide="trending-up" class="subnav-icon"></i>
+        <span>Trends</span>
+    </a>
+</div>
+
+<style>
+    .analytics-subnav {
+        display: inline-flex;
+        gap: 4px;
+        margin-bottom: 28px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 4px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .subnav-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        letter-spacing: 0.01em;
+    }
+
+    .subnav-icon {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
+
+    .subnav-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text-primary);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .subnav-item.active {
+        background: linear-gradient(135deg, rgba(57, 211, 242, 0.15), rgba(57, 211, 242, 0.08));
+        color: #39d3f2;
+        border-color: rgba(57, 211, 242, 0.25);
+        box-shadow: 0 0 16px rgba(57, 211, 242, 0.1);
+        font-weight: 600;
+    }
+
+    .subnav-item.active .subnav-icon {
+        color: #39d3f2;
+    }
+</style>

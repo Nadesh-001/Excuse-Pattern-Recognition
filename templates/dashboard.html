@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+    .dashboard-container {
+        padding: 32px 24px;
+        max-width: 1320px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .dash-header {
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dash-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+    }
+
+    .dash-subtitle {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .dash-subtitle span {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-family: var(--font-display);
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+    }
+
+    .task-item-card {
+        padding: 14px 16px;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: block;
+    }
+
+    .task-item-card:hover {
+        border-color: var(--border-hover);
+        transform: translateX(4px);
+    }
+
+    .prescription-pill {
+        padding: 12px 14px;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        margin-bottom: 10px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .dash-main-col {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        min-width: 0;
+    }
+
+    .dash-side-col {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="dash-header">
+        <div>
+            <h1>Dashboard</h1>
+            <div class="dash-subtitle">Welcome back, <span>{{ user_name }}</span> — Neural Analytics Engine Active</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('tasks.new_task') }}" class="clay-btn clay-btn-primary">
+                <i data-lucide="plus" style="width:14px; height:14px;"></i> New Task
+            </a>
+        </div>
+    </div>
+
+    {% set total_analyzed = (analytics.total_delays or 0) %}
+    {% set suspicious_count = (analytics.risk_high or 0) %}
+    {% set review_count = (analytics.risk_med or 0) %}
+    {% set genuine_count = (analytics.risk_low or 0) %}
+    {% set avg_conf = (analytics.avg_auth_score or 0)|round(1) %}
+
+    <!-- 1. HERO ROW: FULL WIDTH AI INTELLIGENCE SUMMARY -->
+    <div class="bento-card" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div>
+                <span class="clay-badge"><i data-lucide="cpu" style="width:12px; color:var(--primary);"></i> AI Intelligence Summary</span>
+                <h2 style="font-size: 22px; margin-top: 10px; color: var(--text-primary);">System Health & Reliability Baseline</h2>
+            </div>
+            <span class="clay-badge" style="color:var(--success);">
+                <span style="width:6px; height:6px; border-radius:50%; background:var(--success); display:inline-block; margin-right:4px;"></span> OPERATIONAL
+            </span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; max-width: 800px; line-height: 1.6;">
+            Excuse Pattern AI has analyzed {{ total_analyzed }} delay submissions with an average verification confidence of {{ avg_conf }}%. Behavioral metrics remain stable across active project teams.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: auto;">
+            <div style="padding: 14px 18px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div class="stat-label">Verified Normal</div>
+                <div style="font-size: 24px; font-family: var(--font-display); font-weight: 800; color: var(--success); margin-top: 2px;">{{ genuine_count }}</div>
+            </div>
+            <div style="padding: 14px 18px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div class="stat-label">Needs Review</div>
+                <div style="font-size: 24px; font-family: var(--font-display); font-weight: 800; color: var(--warning); margin-top: 2px;">{{ review_count }}</div>
+            </div>
+            <div style="padding: 14px 18px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <div class="stat-label">High Risk Outliers</div>
+                <div style="font-size: 24px; font-family: var(--font-display); font-weight: 800; color: var(--danger); margin-top: 2px;">{{ suspicious_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. REGION DASHBOARD GRID: LEFT (MAIN 2.2fr) vs RIGHT (SIDEBAR 1fr) -->
+    <div class="dashboard-regions-grid">
+
+        <!-- LEFT MAIN COLUMN (Analytics Charts & Task History) -->
+        <div class="dash-main-col">
+            
+            <!-- Pattern Chart Card -->
+            <div class="bento-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="pie-chart" style="width:18px; color:var(--primary);"></i>
+                        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Delay Risk Classification Distribution</h3>
+                    </div>
+                    <span class="clay-badge">Realtime Metrics</span>
+                </div>
+                
+                {% if total_analyzed > 0 %}
+                <div style="height: 240px; display: flex; justify-content: center; align-items: center; padding: 10px;">
+                    <canvas id="excuseChart" data-suspicious="{{ suspicious_count }}" data-review="{{ review_count }}" data-genuine="{{ genuine_count }}" style="max-height: 220px;"></canvas>
+                </div>
+                {% else %}
+                <div style="padding: 48px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                    <i data-lucide="bar-chart" style="width:32px; height:32px; color:var(--text-muted); margin-bottom:8px; display:block; margin-left:auto; margin-right:auto;"></i>
+                    No delay reports recorded yet. Submit your first delay to activate classification telemetry.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Active Tasks & Activity Card -->
+            <div class="bento-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="layers" style="width:18px; color:var(--primary);"></i>
+                        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Active Workspace Tasks</h3>
+                    </div>
+                    <a href="{{ url_for('tasks.tasks') }}" class="clay-btn" style="padding: 4px 12px; font-size: 11px;">View All</a>
+                </div>
+
+                {% if active_tasks %}
+                    {% for task in active_tasks[:3] %}
+                    <a href="{{ url_for('tasks.task_details', task_id=task.id) }}" class="task-item-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-weight: 700; color: var(--text-primary); font-size: 14px;">{{ task.title }}</span>
+                            <span class="clay-badge" style="font-size: 10px;">{{ task.priority }}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted); display: flex; gap: 16px; margin-top: 6px;">
+                            <span><i data-lucide="clock" style="width:12px; vertical-align:middle; margin-right:4px;"></i> {{ task.deadline }}</span>
+                            <span><i data-lucide="shield-alert" style="width:12px; vertical-align:middle; margin-right:4px;"></i> Risk: {{ task.risk_score|default(0) }}%</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div style="padding: 32px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                        No active tasks currently assigned.
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDEBAR COLUMN (KPI Cards & AI Prescriptions) -->
+        <div class="dash-side-col">
+            
+            <!-- Pending Tasks KPI Card -->
+            <div class="bento-card">
+                <div class="stat-label">Pending Tasks</div>
+                <div class="stat-value" style="margin-top: 4px;">{{ counts.pending if counts is defined and counts.pending is defined else 0 }}</div>
+                <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">Active in queue</div>
+            </div>
+
+            <!-- Efficiency KPI Card -->
+            <div class="bento-card">
+                <div class="stat-label">Efficiency Rate</div>
+                <div class="stat-value" style="margin-top: 4px; color: var(--primary);">{{ counts.efficiency if counts is defined and counts.efficiency is defined else 100 }}%</div>
+                <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">Completion performance</div>
+            </div>
+
+            <!-- Verification Baseline Card -->
+            <div class="bento-card">
+                <div class="stat-label">Verification Baseline</div>
+                <div class="stat-value" style="margin-top: 4px; color: var(--success);">
+                    {{ counts.auth_score if counts is defined and counts.auth_score is defined else 100 }}%
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px; line-height: 1.4;">
+                    Semantic authenticity rating computed by NLP engine.
+                </div>
+            </div>
+
+            <!-- AI Actions Card -->
+            <div class="bento-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <i data-lucide="zap" style="width:16px; color:var(--warning);"></i>
+                    <h3 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Strategic AI Actions</h3>
+                </div>
+                {% set prescriptions = ai_insights|selectattr('category', 'equalto', 'prescription')|list if ai_insights is defined else [] %}
+                {% if prescriptions %}
+                    {% for p in prescriptions %}
+                    <div class="prescription-pill">
+                        <i data-lucide="check-circle-2" style="width:14px; color:var(--success); flex-shrink:0;"></i>
+                        <span>{{ p.text }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="prescription-pill">
+                        <i data-lucide="check-circle-2" style="width:14px; color:var(--success); flex-shrink:0;"></i>
+                        <span>All operational metrics are within standard nominal parameters.</span>
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        const ctx = document.getElementById('excuseChart');
+        if (ctx && typeof Chart !== 'undefined') {
+            const s = parseInt(ctx.dataset.suspicious) || 0;
+            const r = parseInt(ctx.dataset.review) || 0;
+            const g = parseInt(ctx.dataset.genuine) || 0;
+
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const labelColor = isLight ? '#0f172a' : '#cbd5e1';
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Risk', 'Needs Review', 'Normal'],
+                    datasets: [{
+                        data: [s, r, g],
+                        backgroundColor: [
+                            'rgba(248, 113, 113, 0.85)',
+                            'rgba(251, 191, 36, 0.85)',
+                            'rgba(52, 211, 153, 0.85)'
+                        ],
+                        borderColor: [
+                            'rgba(248, 113, 113, 1)',
+                            'rgba(251, 191, 36, 1)',
+                            'rgba(52, 211, 153, 1)'
+                        ],
+                        borderWidth: 1,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: labelColor,
+                                font: { size: 12, family: 'Inter' },
+                                padding: 14,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

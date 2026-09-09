@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}User Report — {{ r.user.name | truncate(20) }} — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Reports / User #{{ target_user_id }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 15mm 12mm;
+    }
+
+    @media print {
+
+        .sidebar,
+        .topbar,
+        .report-action-bar,
+        .breadcrumb-bar {
+            display: none !important;
+        }
+
+        body,
+        .main-content,
+        .report-page {
+            background: #fff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .a4-container {
+            box-shadow: none !important;
+            border: none !important;
+            max-width: 100% !important;
+            border-radius: 0 !important;
+        }
+
+        .glass-card {
+            background: #f8f9fa !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+
+        .delay-table th {
+            background: #e9ecef !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-page">
+
+    {# ---- Action Bar ---- #}
+    <div class="report-action-bar">
+        <a href="{{ url_for('tasks.tasks') }}" class="back-link">
+            <i data-lucide="arrow-left" style="width:13px;"></i> Back to Tasks
+        </a>
+        <div class="spacer"></div>
+        <a href="{{ url_for('reports.user_report_view', user_id=target_user_id) }}"
+            class="btn-report btn-report-outline">
+            <i data-lucide="file-text" style="width:15px;"></i> View Report
+        </a>
+        <a href="{{ url_for('reports.user_report_download', user_id=target_user_id) }}"
+            class="btn-report btn-report-primary">
+            <i data-lucide="download" style="width:15px;"></i> Download PDF
+        </a>
+        <button onclick="window.print()" class="btn-report btn-report-outline"
+            style="border-color:rgba(168,85,247,0.4); color:#a855f7; background:rgba(168,85,247,0.06); cursor:pointer;">
+            <i data-lucide="printer" style="width:15px;"></i> Print
+        </button>
+    </div>
+
+    {# ---- A4 Document ---- #}
+    <div class="a4-container">
+
+        {# ── Report Header ── #}
+        <div class="report-header">
+            <div class="report-header-top">
+                <div class="report-brand">
+                    <div class="report-brand-icon">
+                        <i data-lucide="brain-circuit" style="width:22px;"></i>
+                    </div>
+                    <div>
+                        <div class="report-brand-name">EXCUSE_AI</div>
+                        <div class="report-brand-sub">Neural Intelligence Engine · v9.4</div>
+                    </div>
+                </div>
+                <div class="report-meta">
+                    <div class="report-meta-id">Report ID</div>
+                    <div class="report-meta-id"><strong>{{ r.report_id }}</strong></div>
+                    <div class="report-meta-id" style="margin-top:6px;">Generated</div>
+                    <div class="report-meta-id"><strong style="color:#ffffff;">{{ r.generated_on }}</strong></div>
+                </div>
+            </div>
+            <div class="report-title-block">
+                <div class="report-title-eyebrow">Consolidated Delay Intelligence Report</div>
+                <div class="report-title">
+                    <span>User-Level</span> Behavioral Analysis
+                </div>
+            </div>
+        </div>
+
+        {# ── Body ── #}
+        <div class="report-body">
+
+            {# SECTION 1: Employee Information #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">01</span>
+                    <span class="section-title-text">Employee Information</span>
+                    <i data-lucide="user" style="width:14px;" class="section-icon"></i>
+                </div>
+                <div class="glass-card">
+                    <div class="kv-grid">
+                        <div class="kv-item">
+                            <div class="kv-label">Full Name</div>
+                            <div class="kv-value" style="font-weight:700; color:#fff; font-size:16px;">{{ r.user.name }}
+                            </div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Email</div>
+                            <div class="kv-value mono">{{ r.user.email }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">System Role</div>
+                            <div class="kv-value">{{ r.user.role }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Job Role</div>
+                            <div class="kv-value">{{ r.user.job_role }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# SECTION 2: Summary Statistics #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">02</span>
+                    <span class="section-title-text">Delay Summary Statistics</span>
+                    <i data-lucide="pie-chart" style="width:14px;" class="section-icon"></i>
+                </div>
+                {% set st = r.stats %}
+                <div class="stat-grid">
+                    <div class="stat-pill">
+                        <div class="stat-pill-val" style="color:var(--rpt-teal);">{{ st.total_tasks }}</div>
+                        <div class="stat-pill-label">Total Tasks</div>
+                    </div>
+                    <div class="stat-pill">
+                        {% set delay_cls = 'rpt-val-danger' if st.total_delays > 5 else ('rpt-val-warn' if
+                        st.total_delays > 2 else 'rpt-val-ok') %}
+                        <div class="stat-pill-val {{ delay_cls }}">{{ st.total_delays }}</div>
+                        <div class="stat-pill-label">Total Delays</div>
+                    </div>
+                    <div class="stat-pill">
+                        <div class="stat-pill-val">{{ st.delay_rate }}%</div>
+                        <div class="stat-pill-label">Delay Rate</div>
+                    </div>
+                    <div class="stat-pill">
+                        <div class="stat-pill-val" style="color:#a78bfa;">{{ st.avg_risk_score }}%</div>
+                        <div class="stat-pill-label">Avg Risk</div>
+                    </div>
+                    <div class="stat-pill" style="grid-column: span 2;">
+                        <div class="stat-pill-val" style="font-size:14px;">{{ st.most_common_category }}</div>
+                        <div class="stat-pill-label">Most Frequent Category</div>
+                    </div>
+                    <div class="stat-pill">
+                        <div class="stat-pill-val" style="font-size:16px;">{{ st.avg_sentiment }}</div>
+                        <div class="stat-pill-label">Avg Sentiment</div>
+                    </div>
+                </div>
+            </div>
+
+            {# SECTION 3: Delay Records Table #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">03</span>
+                    <span class="section-title-text">Delay Record History</span>
+                    <i data-lucide="scroll-text" style="width:14px;" class="section-icon"></i>
+                </div>
+
+                {% if r.delay_rows %}
+                <div class="glass-card" style="padding:0; overflow:hidden;">
+                    <table class="delay-table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Delay Days</th>
+                                <th>Category</th>
+                                <th>Confidence</th>
+                                <th>Risk Level</th>
+                                <th>Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in r.delay_rows %}
+                            <tr>
+                                <td style="font-weight:500; color:#e2e8f0;">{{ row.task_title | truncate(35) }}</td>
+                                <td class="mono">
+                                    {% set day_cls = 'rpt-val-danger' if row.delay_days > 5 else ('rpt-val-warn' if
+                                    row.delay_days > 2 else 'rpt-val-ok') %}
+                                    <span class="{{ day_cls }}" style="font-weight:700;">{{ row.delay_days }}d</span>
+                                </td>
+                                <td style="color:#ffffff;">{{ row.category }}</td>
+                                <td class="mono">{{ row.confidence }}%</td>
+                                <td class="risk-{{ row.risk_level | lower }}">{{ row.risk_level }}</td>
+                                <td class="mono" style="font-size:11px; color:#ffffff;">{{ row.submitted_at | string |
+                                    truncate(16, True, '') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="glass-card">
+                    <div class="on-time-callout">
+                        <i data-lucide="check-circle-2" style="width:20px;"></i>
+                        No delay records found. This user has a clean track record.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            {# SECTION 4: AI Conclusion #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">04</span>
+                    <span class="section-title-text">Overall AI Conclusion</span>
+                    <i data-lucide="bot" style="width:14px;" class="section-icon"></i>
+                </div>
+                <div class="conclusion-block">
+                    <ul class="conclusion-list">
+                        {% for sentence in r.conclusion_points %}
+                        <li>{{ sentence }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div
+                    style="margin-top:12px; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--rpt-muted);">
+                    <i data-lucide="sparkles" style="width:12px; color:#a78bfa;"></i>
+                    Generated by Groq LLaMA-3.3-70B · {{ r.generated_on }}
+                </div>
+            </div>
+
+
+        </div>{# /report-body #}
+    </div>{# /a4-container #}
+</div>{# /report-page #}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+{% endblock %}

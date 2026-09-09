@@ -1,0 +1,184 @@
+/* ============================================================
+   Design tokens
+   - Base colour palette (semantic, role-agnostic)
+   - Role tokens reference base tokens
+   ============================================================ */
+
+:root {
+    /* Base palette */
+    --color-amber-500: #f59e0b;
+    --color-red-500: #ef4444;
+    --color-blue-500: #3b82f6;
+    --color-green-500: #10b981;
+
+    /* Role tokens — change a role's colour by updating one line */
+    --admin-primary: var(--color-amber-500);
+    --manager-primary: var(--color-blue-500);
+    --employee-primary: var(--color-green-500);
+
+    /*
+     * Glow colours derived from their primary via color-mix().
+     * 40% opacity against transparent gives the rgba equivalent
+     * without duplicating the hex value.
+     */
+    --admin-glow: color-mix(in srgb, var(--admin-primary) 40%, transparent);
+    --manager-glow: color-mix(in srgb, var(--manager-primary) 40%, transparent);
+    --employee-glow: color-mix(in srgb, var(--employee-primary) 40%, transparent);
+}
+
+
+/* ============================================================
+   Role-based neon themes
+   No !important — class specificity is sufficient when classes
+   are applied directly to elements. If a context requires an
+   override, increase specificity at the call site instead.
+   ============================================================ */
+
+.neon-border-admin {
+    border: 1px solid var(--admin-primary);
+    box-shadow: 0 0 15px var(--admin-glow);
+}
+
+.neon-border-manager {
+    border: 1px solid var(--manager-primary);
+    box-shadow: 0 0 15px var(--manager-glow);
+}
+
+.neon-border-employee {
+    border: 1px solid var(--employee-primary);
+    box-shadow: 0 0 15px var(--employee-glow);
+}
+
+.neon-text-admin {
+    color: var(--admin-primary);
+    text-shadow: 0 0 10px var(--admin-glow);
+}
+
+.neon-text-manager {
+    color: var(--manager-primary);
+    text-shadow: 0 0 10px var(--manager-glow);
+}
+
+.neon-text-employee {
+    color: var(--employee-primary);
+    text-shadow: 0 0 10px var(--employee-glow);
+}
+
+
+/* ============================================================
+   Tab navigation
+   ============================================================ */
+
+.dashboard-nav {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.dashboard-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
+    border-bottom: 3px solid transparent;
+    /* Specify only the properties that should animate. */
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.dashboard-tab:hover {
+    color: var(--text-main);
+}
+
+.dashboard-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+
+/* ============================================================
+   KPI cards
+   ============================================================ */
+
+.kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    /*
+     * will-change promotes the card to its own compositor layer before
+     * the first hover, eliminating the repaint cost on interaction.
+     * Use sparingly — each promoted layer consumes GPU memory.
+     */
+    will-change: transform;
+    transition: transform 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+}
+
+.kpi-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+
+.kpi-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+
+/* ============================================================
+   Accessibility — respect reduced-motion preference.
+   Users who have requested reduced motion get instant transitions
+   instead of animated ones. The visual state change still occurs;
+   only the animation is suppressed.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .dashboard-tab,
+    .kpi-card {
+        transition: none;
+    }
+
+    .kpi-card:hover {
+        transform: none;
+    }
+}
+
+
+/* ============================================================
+   Light mode — neon glow is a dark-mode aesthetic.
+   On light backgrounds the box-shadow is retained at reduced
+   opacity for a subtle tint; the text-shadow is removed because
+   it becomes illegible on light text against a light background.
+   ============================================================ */
+
+@media (prefers-color-scheme: light) {
+
+    .neon-border-admin,
+    .neon-border-manager,
+    .neon-border-employee {
+        box-shadow: none;
+    }
+
+    .neon-text-admin,
+    .neon-text-manager,
+    .neon-text-employee {
+        text-shadow: none;
+    }
+}

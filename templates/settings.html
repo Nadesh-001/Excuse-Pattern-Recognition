@@ -1,0 +1,994 @@
+{% extends "base.html" %}
+
+{% block title %}Kernel_Config — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Settings{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --settings-accent: #39d3f2;
+        --settings-accent-glow: rgba(57, 211, 242, 0.15);
+        --settings-bg: rgba(13, 17, 23, 0.85);
+        --settings-border: rgba(255, 255, 255, 0.08);
+    }
+
+    .settings-container {
+        padding: 40px 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: radial-gradient(circle at 10% 0%, rgba(57, 211, 242, 0.05) 0%, transparent 40%);
+    }
+
+    .settings-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 32px;
+        min-height: 70vh;
+    }
+
+    @media (max-width: 900px) {
+        .settings-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* --- Sidebar nav --- */
+    .settings-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        position: sticky;
+        top: 90px;
+        height: fit-content;
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 12px;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .settings-nav-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 8px 12px 4px;
+    }
+
+    .settings-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        background: transparent;
+        user-select: none;
+    }
+
+    .settings-nav-item:hover {
+        background: var(--bg-overlay);
+        color: var(--text-primary);
+        transform: translateX(2px);
+    }
+
+    .settings-nav-item.active {
+        background: var(--clay-bg);
+        border-color: var(--border-hover);
+        color: var(--primary);
+        box-shadow: var(--clay-shadow);
+    }
+
+    .settings-nav-item.active .nav-icon-wrap {
+        color: var(--primary);
+        background: var(--clay-bg);
+    }
+
+    .nav-icon-wrap {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.2s;
+        color: var(--text-muted);
+    }
+
+    /* --- Panes --- */
+    .settings-pane {
+        display: none;
+        animation: slideFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .settings-pane.active {
+        display: block;
+    }
+
+    .section-header {
+        margin-bottom: 28px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.4px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--clay-bg);
+        box-shadow: var(--clay-shadow);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+    }
+
+    .section-desc {
+        color: var(--text-muted);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    /* --- Glass cards --- */
+    .neural-card {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 28px;
+        box-shadow: var(--glass-shadow);
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* --- Form styles --- */
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 10px;
+    }
+
+    .form-control-neural {
+        width: 100%;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: var(--text-primary);
+        font-size: 14px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-control-neural:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        outline: none;
+    }
+
+    /* --- Range slider --- */
+    input[type=range] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        height: 6px;
+        background: var(--border);
+        border-radius: 3px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        background: var(--primary);
+        cursor: pointer;
+        margin-top: -6px;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    /* --- Toggle switch --- */
+    .neural-toggle {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .neural-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .neural-toggle-slider {
+        position: absolute;
+        inset: 0;
+        background: var(--bg-inset);
+        border-radius: 24px;
+        transition: 0.3s;
+        cursor: pointer;
+        border: 1px solid var(--border);
+    }
+
+    .neural-toggle-slider::before {
+        content: '';
+        position: absolute;
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background: var(--text-primary);
+        border-radius: 50%;
+        transition: 0.3s;
+    }
+
+    .neural-toggle input:checked+.neural-toggle-slider {
+        background: rgba(56, 189, 248, 0.2);
+        border-color: var(--primary);
+    }
+
+    .neural-toggle input:checked+.neural-toggle-slider::before {
+        transform: translateX(20px);
+        background: var(--primary);
+        box-shadow: 0 0 8px var(--primary);
+    }
+
+    /* --- Row layout helper --- */
+    .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        background: var(--bg-inset);
+        border-radius: 14px;
+        margin-bottom: 12px;
+        border: 1px solid var(--border);
+        transition: border-color 0.2s;
+    }
+
+    .setting-row:hover {
+        border-color: var(--border-hover);
+    }
+
+    .setting-row-label {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 13px;
+        margin-bottom: 3px;
+    }
+
+    .setting-row-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    /* --- Terminal log view --- */
+    .terminal-view {
+        background: var(--bg-inset);
+        border-radius: 14px;
+        padding: 20px;
+        font-family: var(--font-mono);
+        color: var(--text-secondary);
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid var(--border);
+        line-height: 1.8;
+    }
+
+    .log-line {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 6px;
+        align-items: baseline;
+        border-bottom: 1px solid var(--border-muted);
+        padding-bottom: 4px;
+    }
+
+    .log-ts {
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .log-lvl {
+        font-weight: 700;
+        min-width: 64px;
+        flex-shrink: 0;
+    }
+
+    .lvl-info {
+        color: #7aa2f7;
+    }
+
+    .lvl-warn {
+        color: #e0af68;
+    }
+
+    .lvl-err {
+        color: #f7768e;
+    }
+
+    .lvl-debug {
+        color: #ffffff;
+    }
+
+    .log-loading,
+    .log-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #ffffff;
+        font-size: 12px;
+        padding: 40px 0;
+    }
+
+    .spin {
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(57, 211, 242, 0.3);
+        border-top-color: var(--settings-accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* --- Danger zone --- */
+    .danger-btn-wrap {
+        position: relative;
+        width: 100%;
+        height: 48px;
+        background: rgba(248, 81, 73, 0.05);
+        border: 1px solid rgba(248, 81, 73, 0.2);
+        border-radius: 14px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .danger-btn-wrap:hover {
+        background: rgba(248, 81, 73, 0.08);
+        border-color: rgba(248, 81, 73, 0.4);
+    }
+
+    .danger-btn-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;
+        background: rgba(248, 81, 73, 0.2);
+        transition: width 0.1s linear;
+    }
+
+    .danger-btn-text {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #f85149;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 13px;
+        font-family: var(--font-mono);
+        pointer-events: none;
+        user-select: none;
+    }
+
+    /* --- Log toolbar --- */
+    .log-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .log-filter-btns {
+        display: flex;
+        gap: 6px;
+    }
+
+    .log-filter-btn {
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: rgba(255, 255, 255, 0.03);
+        color: #ffffff;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .log-filter-btn.active,
+    .log-filter-btn:hover {
+        background: rgba(57, 211, 242, 0.08);
+        border-color: rgba(57, 211, 242, 0.25);
+        color: var(--settings-accent);
+    }
+
+    .log-refresh-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-family: var(--font-mono);
+        border: 1px solid rgba(57, 211, 242, 0.2);
+        background: rgba(57, 211, 242, 0.05);
+        color: var(--settings-accent);
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .log-refresh-btn:hover {
+        background: rgba(57, 211, 242, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-layout">
+
+        <!-- ===== Sidebar Navigation ===== -->
+        <div class="settings-nav">
+            <div class="settings-nav-label">Configuration</div>
+
+            <div class="settings-nav-item active" data-pane="account" onclick="switchPane('account')">
+                <span class="nav-icon-wrap"><i data-lucide="user" style="width:14px;height:14px;"></i></span>
+                Account Profile
+            </div>
+            <div class="settings-nav-item" data-pane="neural" onclick="switchPane('neural')">
+                <span class="nav-icon-wrap"><i data-lucide="cpu" style="width:14px;height:14px;"></i></span>
+                System Interface
+            </div>
+            <div class="settings-nav-item" data-pane="security" onclick="switchPane('security')">
+                <span class="nav-icon-wrap"><i data-lucide="shield" style="width:14px;height:14px;"></i></span>
+                Security Keys
+            </div>
+            <div class="settings-nav-item" data-pane="logs" onclick="switchPane('logs')">
+                <span class="nav-icon-wrap"><i data-lucide="terminal" style="width:14px;height:14px;"></i></span>
+                System Logs
+            </div>
+        </div>
+
+        <!-- ===== Content Area ===== -->
+        <div class="settings-content-wrapper">
+
+            <!-- ── Pane: Account ── -->
+            <div id="pane-account" class="settings-pane active">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-title-icon"><i data-lucide="user"
+                                style="width:16px;height:16px;"></i></span>
+                        Identity Profile
+                    </h2>
+                    <p class="section-desc">// manage your designation and communication vectors</p>
+                </div>
+
+                <div class="neural-card">
+                    <form action="{{ url_for('common.update_settings') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="tag" style="width:11px;height:11px;color:var(--settings-accent);"></i>
+                                Full Designation
+                            </label>
+                            <input type="text" name="full_name" value="{{ session.get('user_name', '') }}"
+                                class="form-control-neural" placeholder="Identity String">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="mail" style="width:11px;height:11px;color:var(--settings-accent);"></i>
+                                Communication Node (Email)
+                            </label>
+                            <input type="email" name="email" value="{{ session.get('email', '') }}"
+                                class="form-control-neural" placeholder="node@network.io">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Access Level</label>
+                            <div
+                                style="padding:13px 16px; background:rgba(57,211,242,0.05); border:1px dashed rgba(57,211,242,0.25); border-radius:12px; font-family:var(--font-mono); font-size:12px; color:var(--settings-accent);">
+                                {{ session.get('user_role', 'Employee')|upper }} // AUTHORIZED_SESSION
+                            </div>
+                        </div>
+
+                        <div style="margin-top:28px;">
+                            <button type="submit" class="btn btn-primary"
+                                style="width:100%; padding:13px; border-radius:14px; font-weight:700;">
+                                Save Account Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="neural-card" style="border-color:rgba(248,81,73,0.2);">
+                    <h3
+                        style="color:#f85149; font-size:15px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="alert-triangle" style="width:16px;height:16px;"></i>
+                        Danger Zone
+                    </h3>
+                    <p style="font-size:13px; color:#ffffff; margin-bottom:20px; line-height:1.6;">
+                        Permanently delete your account from the system. This action is irreversible.
+                    </p>
+                    <div class="danger-btn-wrap" id="dangerBtn" onmousedown="startDangerHold()"
+                        onmouseup="stopDangerHold()" onmouseleave="stopDangerHold()" ontouchstart="startDangerHold()"
+                        ontouchend="stopDangerHold()">
+                        <div class="danger-btn-progress" id="dangerProgress"></div>
+                        <div class="danger-btn-text">
+                            <i data-lucide="trash-2" style="width:14px; margin-right:8px;"></i>
+                            Hold to Delete Account
+                        </div>
+                    </div>
+                    <form id="delete-form" action="{{ url_for('common.settings_delete_account') }}" method="POST"
+                        style="display:none;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    </form>
+                </div>
+            </div>
+
+            <!-- ── Pane: Neural Interface ── -->
+            <div id="pane-neural" class="settings-pane">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-title-icon"><i data-lucide="cpu"
+                                style="width:16px;height:16px;"></i></span>
+                        System Interface
+                    </h2>
+                    <p class="section-desc">// fine-tune the behavioral analysis core and notification sensitivity</p>
+                </div>
+
+                <div class="neural-card">
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-row-label">Active System Monitoring</div>
+                            <div class="setting-row-desc">Enable real-time task delay alerts</div>
+                        </div>
+                        <label class="neural-toggle">
+                            <input type="checkbox" id="notificationsToggle" {% if neural_config.notifications
+                                %}checked{% endif %}>
+                            <span class="neural-toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-row-label">Pattern Auto-Analysis</div>
+                            <div class="setting-row-desc">Automatically flag suspicious reports</div>
+                        </div>
+                        <label class="neural-toggle">
+                            <input type="checkbox" id="autoAnalysisToggle" {% if neural_config.auto_analysis %}checked{%
+                                endif %}>
+                            <span class="neural-toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group" style="margin-top:24px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <label class="form-label" style="margin-bottom:0;">AI Response Style</label>
+                            <span id="temp-val"
+                                style="color:var(--primary); font-family:var(--font-mono); font-weight:700; font-size:14px;">{{
+                                neural_config.temperature }}</span>
+                        </div>
+                        <input type="range" id="aiTemperature" min="0" max="1" step="0.1"
+                            value="{{ neural_config.temperature }}">
+                        <div
+                            style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:var(--text-muted); font-family:var(--font-mono); letter-spacing:0.05em; text-transform:uppercase;">
+                            <span>Precise</span>
+                            <span>Balanced</span>
+                            <span>Creative</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:32px;">
+                        <button type="button" onclick="saveNeural()" class="clay-btn clay-btn-primary"
+                            style="width:100%; padding:13px; font-weight:700;">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="neural-card" style="background:var(--bg-inset); border-color:var(--border);">
+                    <div style="display:flex; align-items:flex-start; gap:14px;">
+                        <div
+                            style="width:36px; height:36px; border-radius:10px; background:var(--clay-bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--primary); flex-shrink:0; box-shadow:var(--clay-shadow);">
+                            <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight:700; color:var(--text-primary); margin-bottom:4px; font-size:14px;">AI ANALYSIS</div>
+                            <div style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
+                                AI-powered analysis is enabled. EXCUSE_AI analyzes submitted tasks and reports to identify patterns, delays, and anomalies.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Pane: Security Keys ── -->
+            <div id="pane-security" class="settings-pane">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-title-icon"><i data-lucide="shield"
+                                style="width:16px;height:16px;"></i></span>
+                        Encryption &amp; Keys
+                    </h2>
+                    <p class="section-desc">// rotate access credentials and secure your terminal session</p>
+                </div>
+
+                <div class="neural-card">
+                    <form action="{{ url_for('common.settings_change_password') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="lock" style="width:11px;height:11px;color:var(--settings-accent);"></i>
+                                Current Hash (Existing Password)
+                            </label>
+                            <input type="password" name="current_password" class="form-control-neural"
+                                placeholder="••••••••" required>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                            <div class="form-group">
+                                <label class="form-label">New Sequence</label>
+                                <input type="password" name="new_password" class="form-control-neural"
+                                    placeholder="min 8 chars" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Verify Sequence</label>
+                                <input type="password" name="confirm_password" class="form-control-neural"
+                                    placeholder="repeat" required>
+                            </div>
+                        </div>
+
+                        <div class="setting-row" style="margin-top:8px;">
+                            <div>
+                                <div class="setting-row-label">Session Persistence</div>
+                                <div class="setting-row-desc">Stay logged in for 7 days across sessions</div>
+                            </div>
+                            <label class="neural-toggle">
+                                <input type="checkbox" name="remember_me" value="true" checked>
+                                <span class="neural-toggle-slider"></span>
+                            </label>
+                        </div>
+
+                        <div style="margin-top:24px;">
+                            <button type="submit" class="btn btn-default"
+                                style="width:100%; padding:13px; border-radius:14px; border-color:var(--settings-accent); color:var(--settings-accent); font-weight:700;">
+                                Update Passwords
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="neural-card" style="border-color:rgba(86,211,100,0.15);">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                        <div
+                            style="width:32px; height:32px; border-radius:10px; background:rgba(86,211,100,0.08); border:1px solid rgba(86,211,100,0.2); display:flex; align-items:center; justify-content:center; color:#56d364;">
+                            <i data-lucide="check-circle" style="width:15px;height:15px;"></i>
+                        </div>
+                        <div style="font-weight:700; color:var(--text-primary); font-size:13px;">Security Status: Nominal</div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div
+                            style="padding:12px; background:var(--bg-inset); border-radius:10px; border:1px solid var(--border-muted);">
+                            <div
+                                style="font-family:var(--font-mono); font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">
+                                Session</div>
+                            <div style="font-size:12px; color:#56d364; font-weight:600;">Active</div>
+                        </div>
+                        <div
+                            style="padding:12px; background:var(--bg-inset); border-radius:10px; border:1px solid var(--border-muted);">
+                            <div
+                                style="font-family:var(--font-mono); font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">
+                                Encryption</div>
+                            <div style="font-size:12px; color:#56d364; font-weight:600;">bcrypt</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Pane: System Logs ── -->
+            <div id="pane-logs" class="settings-pane">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-title-icon"><i data-lucide="terminal"
+                                style="width:16px;height:16px;"></i></span>
+                        System Logs
+                    </h2>
+                    <p class="section-desc">// real-time telemetry and kernel activity for your session</p>
+                </div>
+
+                <div class="neural-card" style="padding:20px;">
+                    <div class="log-toolbar">
+                        <div class="log-filter-btns">
+                            <button class="log-filter-btn active" onclick="filterLogs('all', this)">ALL</button>
+                            <button class="log-filter-btn" onclick="filterLogs('INFO', this)"
+                                style="color:#7aa2f7; border-color:rgba(122,162,247,0.15);">INFO</button>
+                            <button class="log-filter-btn" onclick="filterLogs('WARN', this)"
+                                style="color:#e0af68; border-color:rgba(224,175,104,0.15);">WARN</button>
+                            <button class="log-filter-btn" onclick="filterLogs('ERROR', this)"
+                                style="color:#f7768e; border-color:rgba(247,118,142,0.15);">ERR</button>
+                        </div>
+                        <button class="log-refresh-btn" onclick="loadLogs()">
+                            <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i>
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div class="terminal-view" id="logViewer">
+                        <div class="log-loading" id="logLoading">
+                            <div class="spin"></div>
+                            Loading activity logs...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /settings-content-wrapper -->
+    </div><!-- /settings-layout -->
+</div><!-- /settings-container -->
+
+<script>
+    // ── Tab switching ──────────────────────────────────────────────────────
+    function switchPane(paneId) {
+        // Deactivate all nav items
+        document.querySelectorAll('.settings-nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        // Activate matching nav item by data-pane attribute (reliable, no text matching)
+        const activeNav = document.querySelector(`.settings-nav-item[data-pane="${paneId}"]`);
+        if (activeNav) activeNav.classList.add('active');
+
+        // Deactivate all panes
+        document.querySelectorAll('.settings-pane').forEach(pane => {
+            pane.classList.remove('active');
+        });
+        // Activate target pane
+        const pane = document.getElementById('pane-' + paneId);
+        if (pane) pane.classList.add('active');
+
+        // Load logs when switching to that tab
+        if (paneId === 'logs') loadLogs();
+
+        localStorage.setItem('settings_tab', paneId);
+    }
+
+    // ── Neural Interface save ─────────────────────────────────────────────
+    function saveNeural() {
+        const notifications = document.getElementById('notificationsToggle').checked;
+        const autoAnalysis = document.getElementById('autoAnalysisToggle').checked;
+        const temp = parseFloat(document.getElementById('aiTemperature').value);
+
+        fetch('/settings/neural', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+            },
+            body: JSON.stringify({
+                notifications: notifications,
+                auto_analysis: autoAnalysis,
+                temperature: temp
+            })
+        })
+            .then(r => {
+                if (!r.ok) throw new Error('COMM_FAILURE');
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showToast('NEURAL_LOGIC_COMMITTED', 'success');
+                } else {
+                    throw new Error(data.error || 'UNKNOWN_ERR');
+                }
+            })
+            .catch(err => {
+                console.error('Logic Save Error:', err);
+                showToast('FAILED_TO_COMMIT: ' + err.message, 'error');
+            });
+    }
+
+    function showToast(msg, type) {
+        const colors = {
+            success: { bg: 'rgba(57,211,242,0.08)', border: 'rgba(57,211,242,0.3)', text: 'var(--settings-accent)' },
+            error: { bg: 'rgba(248,81,73,0.08)', border: 'rgba(248,81,73,0.3)', text: '#f85149' },
+        };
+        const c = colors[type] || colors.success;
+        const toast = document.createElement('div');
+        toast.style.cssText = `position:fixed;bottom:32px;right:32px;background:${c.bg};backdrop-filter:blur(16px);color:${c.text};padding:14px 20px;border-radius:14px;border:1px solid ${c.border};font-family:var(--font-mono);font-size:11px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;gap:10px;animation:slideUp 0.3s ease;`;
+        toast.innerHTML = `<i data-lucide="check-circle-2" style="width:15px;flex-shrink:0;"></i><span>${msg}</span>`;
+        document.body.appendChild(toast);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
+    // ── System Logs ───────────────────────────────────────────────────────
+    let allLogs = [];
+    let currentFilter = 'all';
+
+    function loadLogs() {
+        const viewer = document.getElementById('logViewer');
+        viewer.innerHTML = '<div class="log-loading"><div class="spin"></div>Loading activity logs...</div>';
+
+        fetch('/settings/logs')
+            .then(r => {
+                if (!r.ok) throw new Error('SERVER_COMM_FAULT');
+                return r.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                allLogs = data.logs || [];
+                renderLogs();
+            })
+            .catch(err => {
+                viewer.innerHTML = `<div class="log-empty"><i data-lucide="wifi-off" style="width:16px;"></i> Error: ${err.message}</div>`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+    }
+
+    function renderLogs() {
+        const viewer = document.getElementById('logViewer');
+        const filterMap = { 'all': '', 'INFO': 'INFO', 'WARN': 'WARN', 'ERROR': 'ERROR' };
+        const activeFilter = filterMap[currentFilter] || '';
+
+        const logs = activeFilter === ''
+            ? allLogs
+            : allLogs.filter(l => (l.action || '').toUpperCase() === activeFilter || (l.action === 'WARNING' && activeFilter === 'WARN'));
+
+        if (logs.length === 0) {
+            viewer.innerHTML = '<div class="log-empty"><i data-lucide="inbox" style="width:16px;"></i> No matching telemetry</div>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            return;
+        }
+
+        const ACTION_COLOR = {
+            'LOGIN': 'lvl-info', 'LOGOUT': 'lvl-info', 'ERROR': 'lvl-err',
+            'WARN': 'lvl-warn', 'WARNING': 'lvl-warn', 'DELETE': 'lvl-err',
+            'UPDATE': 'lvl-info', 'CREATE': 'lvl-info', 'PASSWORD_CHANGE': 'lvl-warn',
+        };
+
+        viewer.innerHTML = '';
+        logs.forEach(log => {
+            const line = document.createElement('div');
+            line.className = 'log-line';
+
+            const ts = document.createElement('span');
+            ts.className = 'log-ts';
+            ts.textContent = `[${log.ts}]`;
+
+            const action = (log.action || 'INFO').toUpperCase();
+            const lvl = document.createElement('span');
+            lvl.className = 'log-lvl ' + (ACTION_COLOR[action] || 'lvl-info');
+            lvl.textContent = action;
+
+            const details = document.createElement('span');
+            details.textContent = log.details || '–';
+
+            line.append(ts, lvl, details);
+            viewer.appendChild(line);
+        });
+    }
+
+    function filterLogs(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderLogs();
+    }
+
+    // ── Danger Zone Hold logic ──────────────────────────────────────────
+    let dangerTimer = null;
+    let dangerStart = 0;
+    const DANGER_DURATION = 2000; // 2 seconds
+
+    function startDangerHold() {
+        dangerStart = Date.now();
+        const progress = document.getElementById('dangerProgress');
+        const text = document.querySelector('.danger-btn-text');
+
+        text.textContent = 'NEURAL_PURGE_IN_PROGRESS...';
+
+        dangerTimer = setInterval(() => {
+            const elapsed = Date.now() - dangerStart;
+            const percent = Math.min(100, (elapsed / DANGER_DURATION) * 100);
+            progress.style.width = percent + '%';
+
+            if (elapsed >= DANGER_DURATION) {
+                clearInterval(dangerTimer);
+                document.getElementById('delete-form').submit();
+            }
+        }, 50);
+    }
+
+    function stopDangerHold() {
+        if (dangerTimer) clearInterval(dangerTimer);
+        const progress = document.getElementById('dangerProgress');
+        const text = document.querySelector('.danger-btn-text');
+
+        progress.style.width = '0%';
+        text.innerHTML = '<i data-lucide="trash-2" style="width:14px; margin-right:8px;"></i>Hold to Purge Identity';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTab = localStorage.getItem('settings_tab') || 'account';
+        switchPane(savedTab);
+
+        document.getElementById('aiTemperature').addEventListener('input', e => {
+            document.getElementById('temp-val').textContent = e.target.value;
+        });
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+
+<style>
+    @keyframes slideUp {
+        from {
+            transform: translateY(60px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}

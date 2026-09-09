@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% block title %}AI Report — {{ r.task.title | truncate(30) }} — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Reports / Task #{{ task_id }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 15mm 12mm;
+    }
+
+    @media print {
+
+        /* Hide all app chrome when printing */
+        .sidebar,
+        .topbar,
+        .report-action-bar,
+        .breadcrumb-bar {
+            display: none !important;
+        }
+
+        body,
+        .main-content,
+        .report-page {
+            background: #fff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .a4-container {
+            box-shadow: none !important;
+            border: none !important;
+            max-width: 100% !important;
+            border-radius: 0 !important;
+        }
+
+        .glass-card {
+            background: #f8f9fa !important;
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+
+        .report-header {
+            background: #17255400 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-page">
+
+    {# ---- Action Bar ---- #}
+    <div class="report-action-bar">
+        <a href="{{ url_for('tasks.task_details', task_id=task_id) }}" class="back-link">
+            <i data-lucide="arrow-left" style="width:13px;"></i> Back to Task
+        </a>
+        <div class="spacer"></div>
+        <a href="{{ url_for('reports.task_report_view', task_id=task_id) }}" class="btn-report btn-report-outline">
+            <i data-lucide="file-text" style="width:15px;"></i> View Report
+        </a>
+        <a href="{{ url_for('reports.task_report_download', task_id=task_id) }}" class="btn-report btn-report-primary">
+            <i data-lucide="download" style="width:15px;"></i> Download PDF
+        </a>
+        <button onclick="window.print()" class="btn-report btn-report-outline"
+            style="border-color:rgba(168,85,247,0.4); color:#a855f7; background:rgba(168,85,247,0.06); cursor:pointer;">
+            <i data-lucide="printer" style="width:15px;"></i> Print
+        </button>
+    </div>
+
+    {# ---- A4 Document ---- #}
+    <div class="a4-container">
+
+        {# ── Report Header ── #}
+        <div class="report-header">
+            <div class="report-header-top">
+                <div class="report-brand">
+                    <div class="report-brand-icon">
+                        <i data-lucide="brain-circuit" style="width:22px;"></i>
+                    </div>
+                    <div>
+                        <div class="report-brand-name">EXCUSE_AI</div>
+                        <div class="report-brand-sub">Neural Intelligence Engine · v9.4</div>
+                    </div>
+                </div>
+                <div class="report-meta">
+                    <div class="report-meta-id">Report ID</div>
+                    <div class="report-meta-id"><strong>{{ r.report_id }}</strong></div>
+                    <div class="report-meta-id" style="margin-top:6px;">Generated</div>
+                    <div class="report-meta-id"><strong style="color:#ffffff;">{{ r.generated_on }}</strong></div>
+                </div>
+            </div>
+            <div class="report-title-block">
+                <div class="report-title-eyebrow">Delay Analysis Report</div>
+                <div class="report-title">
+                    <span>Single Task</span> Intelligence Report
+                </div>
+            </div>
+        </div>
+
+        {# ── Body ── #}
+        <div class="report-body">
+
+            {# SECTION 1: Employee Information #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">01</span>
+                    <span class="section-title-text">Employee Information</span>
+                    <i data-lucide="user" style="width:14px;" class="section-icon"></i>
+                </div>
+                <div class="glass-card">
+                    <div class="kv-grid">
+                        <div class="kv-item">
+                            <div class="kv-label">Full Name</div>
+                            <div class="kv-value">{{ r.user.name }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Email</div>
+                            <div class="kv-value mono">{{ r.user.email }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">System Role</div>
+                            <div class="kv-value">{{ r.user.role }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Job Role</div>
+                            <div class="kv-value">{{ r.user.job_role }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# SECTION 2: Task Information #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">02</span>
+                    <span class="section-title-text">Task Information</span>
+                    <i data-lucide="layers" style="width:14px;" class="section-icon"></i>
+                </div>
+                <div class="glass-card">
+                    <div class="kv-grid">
+                        <div class="kv-item">
+                            <div class="kv-label">Task Title</div>
+                            <div class="kv-value" style="font-weight:700; color:#fff;">{{ r.task.title }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Priority</div>
+                            <div
+                                class="kv-value {% if r.task.priority == 'High' %}text-delayed{% elif r.task.priority == 'Medium' %}text-medium{% else %}text-low{% endif %}">
+                                {{ r.task.priority }}
+                            </div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Complexity Weight</div>
+                            <div class="kv-value mono">{{ r.task.complexity }} / 5</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Deadline</div>
+                            <div class="kv-value mono">{{ r.task.deadline or 'N/A' }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Status</div>
+                            <div
+                                class="kv-value {% if r.task.status == 'Completed' %}text-completed{% elif r.task.status == 'Delayed' %}text-delayed{% else %}text-pending{% endif %}">
+                                {{ r.task.status }}
+                            </div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Created At</div>
+                            <div class="kv-value mono" style="font-size:12px;">{{ r.task.created_at or 'N/A' }}</div>
+                        </div>
+                    </div>
+                    {% if r.task.description %}
+                    <div style="margin-top:16px;">
+                        <div class="kv-label">Description</div>
+                        <div style="margin-top:6px; font-size:14px; color:#ffffff; line-height:1.65;">{{
+                            r.task.description }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# SECTION 3: Delay Details #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">03</span>
+                    <span class="section-title-text">Delay Details</span>
+                    <i data-lucide="zap" style="width:14px;" class="section-icon"></i>
+                </div>
+
+                {% if not r.has_delay %}
+                <div class="on-time-callout">
+                    <i data-lucide="check-circle-2" style="width:20px;"></i>
+                    Task completed on time. No delay recorded.
+                </div>
+
+                {% else %}
+                {% set d = r.delay %}
+                <div class="glass-card">
+                    <div class="kv-grid" style="margin-bottom:18px;">
+                        <div class="kv-item">
+                            <div class="kv-label">Delay Duration</div>
+                            <div class="kv-value mono" style="font-size:18px; font-weight:800; color:#ef4444;">
+                                {{ d.delay_days }} day{{ 's' if d.delay_days != 1 else '' }}
+                            </div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Category (ML)</div>
+                            <div class="kv-value">{{ d.category or 'Unknown' }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">AI Confidence</div>
+                            <div class="kv-value mono">{{ d.confidence }}%</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Sentiment</div>
+                            <div class="kv-value mono">{{ d.sentiment_polarity }} <span
+                                    style="color:var(--rpt-muted); font-size:11px;">({{ d.sentiment_label }})</span>
+                            </div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Submitted</div>
+                            <div class="kv-value mono" style="font-size:12px;">{{ d.submitted_at or 'N/A' }}</div>
+                        </div>
+                    </div>
+
+                    {# Verdict Badge #}
+                    <div style="margin-bottom:16px;">
+                        <div class="kv-label" style="margin-bottom:8px;">AI Verdict</div>
+                        <div
+                            class="verdict-badge verdict-{{ d.verdict | lower if d.verdict in ['REAL','SUSPICIOUS','FAKE'] else 'unknown' }}">
+                            {% if d.verdict == 'REAL' %}<i data-lucide="shield-check" style="width:14px;"></i>
+                            {% elif d.verdict == 'SUSPICIOUS' %}<i data-lucide="alert-triangle" style="width:14px;"></i>
+                            {% elif d.verdict == 'FAKE' %}<i data-lucide="x-circle" style="width:14px;"></i>
+                            {% else %}<i data-lucide="help-circle" style="width:14px;"></i>{% endif %}
+                            <span style="font-weight:900; font-size:14px; margin-left:4px;">{{ d.fake_score
+                                }}/100</span>
+                        </div>
+                        {% if d.verdict_reason %}
+                        <div
+                            style="margin-top:8px; font-size:11px; color:var(--rpt-muted); font-family:'JetBrains Mono', monospace; line-height:1.5; padding:8px 12px; background:rgba(0,0,0,0.2); border-radius:8px; border-left:2px solid rgba(255,255,255,0.06);">
+                            {{ d.verdict_reason }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# Reason Text #}
+                    {% if d.reason_text %}
+                    <div class="kv-label">Original Delay Reason</div>
+                    <div class="reason-block">"{{ d.reason_text }}"</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            {# SECTION 4: Supporting Document #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">04</span>
+                    <span class="section-title-text">Supporting Document</span>
+                    <i data-lucide="paperclip" style="width:14px;" class="section-icon"></i>
+                </div>
+                <div class="glass-card">
+                    {% if r.document %}
+                    <div class="kv-grid">
+                        <div class="kv-item">
+                            <div class="kv-label">Document Name</div>
+                            <div class="kv-value mono">{{ r.document.name }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">File Type</div>
+                            <div class="kv-value">{{ r.document.file_type }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Uploaded At</div>
+                            <div class="kv-value mono" style="font-size:12px;">{{ r.document.uploaded_at or 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-doc-callout">
+                        <i data-lucide="file-x" style="width:16px;"></i>
+                        No supporting document submitted.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# SECTION 5: AI Evaluation Summary #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">05</span>
+                    <span class="section-title-text">AI Evaluation Summary</span>
+                    <i data-lucide="bar-chart-3" style="width:14px;" class="section-icon"></i>
+                </div>
+                <div class="glass-card">
+                    {% if r.scores %}
+                    {% set sc = r.scores %}
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:20px;">
+                        <div class="kv-item">
+                            <div class="kv-label">Risk Level</div>
+                            <div class="kv-value {% if sc.risk_level == 'High' %}text-delayed{% elif sc.risk_level == 'Medium' %}text-medium{% else %}text-completed{% endif %}"
+                                style="font-weight:700; font-size:16px;">{{ sc.risk_level }}</div>
+                        </div>
+                        <div class="kv-item">
+                            <div class="kv-label">Pattern Frequency</div>
+                            <div class="kv-value mono">{{ sc.pattern_frequency }} delay(s) on record</div>
+                        </div>
+                    </div>
+                    <div class="score-bar-wrap">
+                        <div class="score-bar-item">
+                            <div class="score-bar-header">
+                                <span class="score-bar-label">Authenticity Score</span>
+                                <span class="score-bar-val">{{ sc.authenticity }}/100</span>
+                            </div>
+                            <div class="score-bar-track">
+                                <div class="score-bar-fill fill-teal js-width" data-width="{{ sc.authenticity }}%"
+                                    style="width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="score-bar-item">
+                            <div class="score-bar-header">
+                                <span class="score-bar-label">Avoidance Score</span>
+                                <span class="score-bar-val">{{ sc.avoidance }}/100</span>
+                            </div>
+                            <div class="score-bar-track">
+                                <div class="score-bar-fill fill-danger js-width" data-width="{{ sc.avoidance }}%"
+                                    style="width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="score-bar-item">
+                            <div class="score-bar-header">
+                                <span class="score-bar-label">Reliability Index</span>
+                                <span class="score-bar-val">{{ sc.reliability_index }}/100</span>
+                            </div>
+                            <div class="score-bar-track">
+                                <div class="score-bar-fill fill-purple js-width"
+                                    data-width="{{ sc.reliability_index }}%" style="width:0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-doc-callout">
+                        <i data-lucide="database-zap" style="width:16px;"></i>
+                        Analysis not available. Submit a delay to generate metrics.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# SECTION 6: AI Conclusion #}
+            <div class="report-section">
+                <div class="report-section-header">
+                    <span class="section-num">06</span>
+                    <span class="section-title-text">Overall AI Conclusion</span>
+                    <i data-lucide="bot" style="width:14px;" class="section-icon"></i>
+                </div>
+                <div class="conclusion-block">
+                    {{ r.conclusion }}
+                </div>
+                <div
+                    style="margin-top:10px; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--rpt-muted); font-family:'JetBrains Mono', monospace;">
+                    <i data-lucide="sparkles" style="width:12px; color:#a78bfa;"></i>
+                    Generated by Groq LLaMA-3.3-70B · {{ r.generated_on }}
+                </div>
+            </div>
+
+        </div>{# /report-body #}
+    </div>{# /a4-container #}
+</div>{# /report-page #}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Animate score bars
+        setTimeout(() => {
+            document.querySelectorAll('.js-width').forEach(el => {
+                el.style.width = el.dataset.width || '0%';
+            });
+        }, 300);
+    });
+</script>
+{% endblock %}

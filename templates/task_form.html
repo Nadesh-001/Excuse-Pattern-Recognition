@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Create Task — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Tasks / New Protocol{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-container {
+        padding: 40px 24px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: calc(100vh - 100px);
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .bento-form-card {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 36px 32px;
+        width: 100%;
+        max-width: 680px;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="bento-form-card">
+        <div style="margin-bottom: 28px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <i data-lucide="plus-circle" style="width:20px; color:var(--primary);"></i>
+                <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary);">Create Task</h1>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted);">Assign new work protocol and configure AI adaptive risk tracking parameters</p>
+        </div>
+
+        <form method="POST" id="taskForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div style="margin-bottom: 20px;">
+                <label for="title" class="form-label">Task Title</label>
+                <input type="text" id="title" name="title" required placeholder="e.g. Database Index Optimization & Migration" maxlength="200">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="description" class="form-label">Task Description</label>
+                <textarea id="description" name="description" rows="4" style="resize:vertical;" placeholder="Define explicit task parameters and target deliverables..." minlength="10" required></textarea>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 20px;">
+                <div>
+                    <label for="assigned_to" class="form-label">Assigned User</label>
+                    <select id="assigned_to" name="assigned_to" required>
+                        <option value="" disabled selected>Select assigned user...</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.full_name }} ({{ user.role|title }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="category" class="form-label">Category</label>
+                    <select id="category" name="category">
+                        <option value="General">General</option>
+                        <option value="Development">Development</option>
+                        <option value="Design">Design</option>
+                        <option value="Research">Research</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Security">Security</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px; padding: 14px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <label for="complexity" class="form-label">Complexity Level: <span id="complexityVal" style="color:var(--primary); font-weight:700;">1</span> / 10</label>
+                <input type="range" id="complexity" name="complexity" min="1" max="10" value="1" step="1" style="width:100%; accent-color:var(--primary);">
+            </div>
+
+            <div class="form-row" style="margin-bottom: 20px;">
+                <div>
+                    <label for="priority" class="form-label">Priority Level</label>
+                    <select id="priority" name="priority">
+                        <option value="Low">Low Priority</option>
+                        <option value="Medium" selected>Normal Priority</option>
+                        <option value="High">High Priority</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="deadline" class="form-label">Completion Deadline</label>
+                    <input type="date" id="deadline" name="deadline" required>
+                </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 28px;">
+                <div>
+                    <label for="est_hours" class="form-label">Est. Hours</label>
+                    <input type="number" id="est_hours" name="est_hours" min="0" max="500" value="0">
+                </div>
+                <div>
+                    <label for="est_minutes" class="form-label">Est. Minutes</label>
+                    <input type="number" id="est_minutes" name="est_minutes" min="0" max="59" value="0">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="clay-btn clay-btn-primary" style="flex: 1;">
+                    <i data-lucide="check" style="width:14px;"></i> Save & Dispatch Task
+                </button>
+                <a href="{{ url_for('tasks.tasks') }}" class="clay-btn">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        const today = new Date().toISOString().split('T')[0];
+        const deadlineInput = document.getElementById('deadline');
+        if (deadlineInput) deadlineInput.setAttribute('min', today);
+
+        const compInput = document.getElementById('complexity');
+        const compVal = document.getElementById('complexityVal');
+        if (compInput && compVal) {
+            compInput.addEventListener('input', () => compVal.innerText = compInput.value);
+        }
+    });
+</script>
+{% endblock %}

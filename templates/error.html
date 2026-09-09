@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ code }} Error — EXCUSE_AI{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card" style="text-align: center; padding: 3rem 2rem;">
+        <div style="font-size: 4rem; font-weight: 800; color: var(--danger, #ef4444); margin-bottom: 0.5rem;">
+            {{ code }}
+        </div>
+        <div style="font-size: 1.25rem; font-weight: 600; color: #fff; margin-bottom: 1rem;">
+            {% if code == 403 %}
+            Access Denied
+            {% elif code == 500 %}
+            Something Went Wrong
+            {% else %}
+            Error
+            {% endif %}
+        </div>
+        <p style="color: #ffffff; margin-bottom: 2rem;">
+            {{ message or "An unexpected error occurred. Please try again later." }}
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            {% if session.get('user_id') %}
+            <a href="{{ url_for('dashboard.dashboard') }}" class="btn-primary">
+                Go to Dashboard
+            </a>
+            {% else %}
+            <a href="{{ url_for('common.index') }}" class="btn-primary">
+                Go Home
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

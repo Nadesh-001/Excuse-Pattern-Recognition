@@ -1,0 +1,33 @@
+Table: delays | Index: delays_pkey
+  Definition: CREATE UNIQUE INDEX delays_pkey ON public.delays USING btree (id)
+--------------------
+Table: delays | Index: idx_delays_risk_level
+  Definition: CREATE INDEX idx_delays_risk_level ON public.delays USING btree (risk_level)
+--------------------
+Table: delays | Index: idx_delays_task_id
+  Definition: CREATE INDEX idx_delays_task_id ON public.delays USING btree (task_id)
+--------------------
+Table: delays | Index: idx_delays_user_id
+  Definition: CREATE INDEX idx_delays_user_id ON public.delays USING btree (user_id)
+--------------------
+Table: delays | Index: idx_delays_user_submitted
+  Definition: CREATE INDEX idx_delays_user_submitted ON public.delays USING btree (user_id, submitted_at DESC)
+--------------------
+Table: tasks | Index: idx_tasks_assigned_to
+  Definition: CREATE INDEX idx_tasks_assigned_to ON public.tasks USING btree (assigned_to)
+--------------------
+Table: tasks | Index: idx_tasks_created_by
+  Definition: CREATE INDEX idx_tasks_created_by ON public.tasks USING btree (created_by)
+--------------------
+Table: tasks | Index: idx_tasks_deadline
+  Definition: CREATE INDEX idx_tasks_deadline ON public.tasks USING btree (deadline)
+--------------------
+Table: tasks | Index: idx_tasks_status
+  Definition: CREATE INDEX idx_tasks_status ON public.tasks USING btree (status)
+--------------------
+Table: tasks | Index: idx_tasks_user_status
+  Definition: CREATE INDEX idx_tasks_user_status ON public.tasks USING btree (assigned_to, status)
+--------------------
+Table: tasks | Index: tasks_pkey
+  Definition: CREATE UNIQUE INDEX tasks_pkey ON public.tasks USING btree (id)
+--------------------

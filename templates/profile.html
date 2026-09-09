@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Profile{% endblock %}
+
+{% block extra_head %}
+<style>
+    .profile-page {
+        padding: 32px 24px;
+        max-width: 1100px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+    }
+
+    .profile-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+    }
+
+    @media (max-width: 850px) {
+        .profile-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(11, 15, 25, 0.75);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <div>
+            <h1>Account & User Profile</h1>
+            <p style="font-size: 13px; color: var(--text-muted);">Manage your account parameters, security sequences, and behavioral metrics</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="document.getElementById('modal-edit-profile').style.display='flex'" class="clay-btn clay-btn-primary">
+                <i data-lucide="user-cog" style="width:14px;"></i> Edit Profile
+            </button>
+            <button onclick="document.getElementById('modal-change-password').style.display='flex'" class="clay-btn">
+                <i data-lucide="key" style="width:14px;"></i> Change Password
+            </button>
+        </div>
+    </div>
+
+    <div class="profile-layout">
+        <!-- Left Main Column: Identity & Bio -->
+        <div>
+            <!-- Identity Bento Card -->
+            <div class="bento-card" style="margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 24px;">
+                    <div id="userAvatarContainer" style="width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: #fff; box-shadow: var(--glass-shadow); flex-shrink: 0; overflow: hidden;">
+                        {% if user.profile_pic %}
+                        <img id="userAvatarImg" src="{{ user.profile_pic }}" alt="Avatar" style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                        <span id="userAvatarInitial">{{ user.full_name[0]|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary);">{{ user.full_name }}</h2>
+                            <span class="clay-badge" style="color: var(--primary);">{{ user.role|upper }}</span>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">{{ user.job_role or 'Account Holder' }}</p>
+                        
+                        <input type="hidden" id="profileCsrfToken" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="file" id="profilePhotoInput" accept="image/png,image/jpeg,image/webp" style="display:none;" onchange="handlePhotoUpload(this)">
+                        <button type="button" id="uploadPhotoBtn" class="clay-btn" style="padding: 4px 10px; font-size: 11px; cursor: pointer;" onclick="document.getElementById('profilePhotoInput').click()">
+                            <i data-lucide="camera" style="width:12px;"></i> Upload Photo
+                        </button>
+                        <div id="uploadStatus" style="font-size: 11px; margin-top: 6px; display: none;"></div>
+                    </div>
+                </div>
+
+                <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;">Personal Details</div>
+                <div class="info-row">
+                    <span style="color: var(--text-muted);"><i data-lucide="mail" style="width:14px; vertical-align:middle; margin-right:6px;"></i> Email</span>
+                    <span style="font-weight: 600; color: var(--text-primary);">{{ user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span style="color: var(--text-muted);"><i data-lucide="phone" style="width:14px; vertical-align:middle; margin-right:6px;"></i> Phone</span>
+                    <span style="font-weight: 600; color: var(--text-primary);">{{ user.phone or 'Not configured' }}</span>
+                </div>
+                <div class="info-row">
+                    <span style="color: var(--text-muted);"><i data-lucide="map-pin" style="width:14px; vertical-align:middle; margin-right:6px;"></i> Location</span>
+                    <span style="font-weight: 600; color: var(--text-primary);">{{ user.city or '' }} {{ user.country or 'Not specified' }}</span>
+                </div>
+            </div>
+
+            <!-- Bio Bento Card -->
+            <div class="bento-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <i data-lucide="file-text" style="width:16px; color:var(--primary);"></i>
+                    <h3 style="font-size: 15px;">Professional Biography</h3>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                    {{ user.bio or 'No professional biography added yet.' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Side Column: Stats & Security -->
+        <div>
+            <!-- Performance Stats -->
+            <div class="bento-card" style="margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <i data-lucide="shield-check" style="width:18px; color:var(--success);"></i>
+                    <h3 style="font-size: 16px;">Reliability Baseline</h3>
+                </div>
+                <div style="font-size: 32px; font-family: var(--font-mono); font-weight: 800; color: var(--success); text-align: center; margin: 12px 0;">
+                    {{ user.reliability_score or 95.0 }}%
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">
+                    Verified work authenticity index.
+                </div>
+                <div class="clay-badge" style="margin: 0 auto; width: fit-content;">
+                    Active Status
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="bento-card" style="border-color: var(--danger);">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <i data-lucide="alert-triangle" style="width:16px; color:var(--danger);"></i>
+                    <h3 style="font-size: 15px; color:var(--danger);">Account Control</h3>
+                </div>
+                <form method="POST" action="{{ url_for('common.settings_delete_account') }}" onsubmit="return confirm('Are you sure you want to permanently delete your account?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="clay-btn" style="width: 100%; color: var(--danger); border-color: var(--danger);">
+                        Delete Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Edit Profile -->
+<div id="modal-edit-profile" class="modal-overlay">
+    <div class="bento-card" style="width: 520px; max-width: 100%;">
+        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;">Edit Profile Information</h2>
+        <form method="POST" action="{{ url_for('common.update_settings') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">Full Name</label>
+                <input type="text" name="full_name" value="{{ user.full_name }}" required>
+            </div>
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">Phone Number</label>
+                <input type="text" name="phone" value="{{ user.phone or '' }}">
+            </div>
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">Job Role</label>
+                <input type="text" name="job_role" value="{{ user.job_role or '' }}">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">Biography</label>
+                <textarea name="bio" rows="3">{{ user.bio or '' }}</textarea>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="clay-btn clay-btn-primary" style="flex: 1;">Save Changes</button>
+                <button type="button" onclick="document.getElementById('modal-edit-profile').style.display='none'" class="clay-btn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Change Password -->
+<div id="modal-change-password" class="modal-overlay">
+    <div class="bento-card" style="width: 440px; max-width: 100%;">
+        <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;">Change Password</h2>
+        <form method="POST" action="{{ url_for('common.settings_change_password') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">Current Password</label>
+                <input type="password" name="current_password" required>
+            </div>
+            <div style="margin-bottom: 14px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">New Password</label>
+                <input type="password" name="new_password" required>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">Confirm New Password</label>
+                <input type="password" name="confirm_password" required>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="clay-btn clay-btn-primary" style="flex: 1;">Update Password</button>
+                <button type="button" onclick="document.getElementById('modal-change-password').style.display='none'" class="clay-btn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    async function handlePhotoUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            showUploadStatus('⚠ Unable to upload photo: Image size exceeds 5 MB limit.', 'var(--danger)');
+            input.value = '';
+            return;
+        }
+
+        const btn = document.getElementById('uploadPhotoBtn');
+        const csrfToken = document.getElementById('profileCsrfToken').value;
+        const formData = new FormData();
+        formData.append('file', file);
+
+        btn.disabled = true;
+        showUploadStatus('Uploading photo...', 'var(--primary)');
+
+        try {
+            const response = await fetch("{{ url_for('common.upload') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok && (result.success || result.path || result.url)) {
+                showUploadStatus('✓ Profile photo updated!', 'var(--success)');
+                const newPath = result.path || result.url;
+                const container = document.getElementById('userAvatarContainer');
+                if (container && newPath) {
+                    container.innerHTML = `<img id="userAvatarImg" src="${newPath}" alt="Avatar" style="width:100%; height:100%; object-fit:cover;">`;
+                } else {
+                    setTimeout(() => window.location.reload(), 1000);
+                }
+            } else {
+                showUploadStatus(`⚠ ${result.error || 'Unable to upload photo. Please select a PNG or JPG image under 5 MB.'}`, 'var(--danger)');
+            }
+        } catch (err) {
+            showUploadStatus('⚠ Connection error during upload. Please try again.', 'var(--danger)');
+        } finally {
+            btn.disabled = false;
+            input.value = '';
+        }
+    }
+
+    function showUploadStatus(msg, color) {
+        const el = document.getElementById('uploadStatus');
+        if (el) {
+            el.style.display = 'block';
+            el.style.color = color;
+            el.innerText = msg;
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}Authentication — EXCUSE_AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .neural-login-page {
+        min-height: 100vh;
+        background: var(--bg-canvas);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        font-family: var(--font-body);
+        transition: background-color 0.3s ease, color 0.3s ease;
+        padding: 40px 20px;
+    }
+
+    /* Subtler Ambient Glow Background */
+    .ambient-glow {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 65%);
+        pointer-events: none;
+    }
+
+    .grid-overlay {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(var(--border) 1px, transparent 1px),
+            linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 85%);
+        pointer-events: none;
+        opacity: 0.25;
+    }
+
+    /* Left Hero Side */
+    .hero-side {
+        flex: 1.2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 60px 80px;
+        position: relative;
+        z-index: 2;
+        max-width: 680px;
+    }
+
+    .hero-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--primary);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+    }
+
+    .eyebrow-line {
+        width: 28px;
+        height: 2px;
+        background: var(--primary);
+        border-radius: 2px;
+    }
+
+    .hero-headline {
+        font-family: var(--font-display);
+        font-size: clamp(42px, 4.8vw, 72px);
+        font-weight: 900;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+    }
+
+    .text-gradient {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-description {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--text-muted);
+        max-width: 480px;
+    }
+
+    /* Right Side: Bento Glass Authentication Container */
+    .login-side {
+        width: 100%;
+        max-width: 440px;
+        position: relative;
+        z-index: 3;
+    }
+
+    .bento-auth-card {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 36px 32px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .neural-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Role Selector */
+    .role-selector-container {
+        margin-bottom: 22px;
+    }
+    
+    .role-selector {
+        display: flex;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 4px;
+        gap: 4px;
+    }
+    
+    .role-btn {
+        flex: 1;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 9px 4px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+    }
+    
+    .role-btn:hover {
+        color: var(--text-primary);
+        background: var(--bg-overlay);
+    }
+    
+    .role-btn.active {
+        color: var(--primary);
+        background: var(--clay-bg);
+        border-color: var(--border);
+        box-shadow: var(--clay-shadow);
+    }
+
+    /* Form Controls */
+    .neural-form-group {
+        margin-bottom: 20px;
+    }
+
+    .neural-input-wrap {
+        position: relative;
+    }
+
+    .neural-input {
+        width: 100%;
+        background: var(--bg-inset) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: var(--radius-md);
+        padding: 12px 16px 12px 52px !important;
+        color: var(--text-primary) !important;
+        font-family: var(--font-body);
+        font-size: 13px;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .neural-input[type="password"] {
+        padding-right: 54px !important;
+    }
+
+    .neural-input:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+    }
+
+    .neural-icon-left {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .neural-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .neural-toggle:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    /* Primary CTA Button */
+    .btn-neural-primary {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+        border-radius: var(--radius-md);
+        color: #ffffff;
+        font-weight: 700;
+        font-family: var(--font-display);
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        margin-top: 10px;
+    }
+
+    .btn-neural-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-neural-primary:active {
+        transform: scale(0.98);
+    }
+
+    @media (max-width: 960px) {
+        .neural-login-page {
+            flex-direction: column;
+            padding: 80px 20px 40px;
+        }
+
+        .hero-side {
+            padding: 20px 0 36px;
+            text-align: center;
+            align-items: center;
+        }
+
+        .hero-eyebrow {
+            justify-content: center;
+        }
+
+        .hero-headline {
+            font-size: 38px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="neural-login-page">
+    <div class="grid-overlay"></div>
+    <div class="ambient-glow"></div>
+
+    <!-- TOP-LEFT BRAND IDENTIFIER -->
+    <div style="position: absolute; top: 24px; left: 32px; z-index: 20; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 10px var(--primary);"></div>
+        <span style="font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--text-primary);">EXCUSE_AI</span>
+    </div>
+
+    <!-- TOP-RIGHT UNOBTRUSIVE THEME SWITCHER -->
+    <div style="position: absolute; top: 24px; right: 32px; z-index: 20;">
+        <button id="themeToggleBtnAuth" class="theme-toggle-btn" style="width:36px; height:36px;" title="Toggle Light/Dark Mode" onclick="toggleTheme()">
+            <i data-lucide="sun" id="themeSunIconAuth" style="width:15px; display:none;"></i>
+            <i data-lucide="moon" id="themeMoonIconAuth" style="width:15px;"></i>
+        </button>
+    </div>
+
+    <!-- LEFT SIDE HERO + 3 PRODUCT CAPABILITY BADGES -->
+    <section class="hero-side">
+        <div class="hero-eyebrow">
+            <span class="eyebrow-line"></span>
+            BEHAVIORAL INTELLIGENCE PLATFORM
+        </div>
+        
+        <h1 class="hero-headline">
+            <span>Detect patterns.</span><br>
+            <span class="text-gradient">Uncover truth.</span>
+        </h1>
+        
+        <p class="hero-description">
+            Analyze excuses, identify behavioral patterns, and turn workplace signals into actionable intelligence.
+        </p>
+
+        <!-- 3 CONCISE PRODUCT CAPABILITIES -->
+        <div style="margin-top: 32px; display: flex; flex-direction: column; gap: 10px; max-width: 440px;">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--glass-shadow);">
+                <i data-lucide="check-circle-2" style="width: 16px; color: var(--primary); flex-shrink: 0;"></i>
+                <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Pattern Recognition AI</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--glass-shadow);">
+                <i data-lucide="check-circle-2" style="width: 16px; color: var(--primary); flex-shrink: 0;"></i>
+                <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Behavioral Risk Analysis</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--glass-shadow);">
+                <i data-lucide="check-circle-2" style="width: 16px; color: var(--primary); flex-shrink: 0;"></i>
+                <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Real-time Intelligence</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- RIGHT SIDE AUTHENTICATION CARD -->
+    <section class="login-side">
+        <div class="bento-auth-card">
+            <div style="margin-bottom: 24px;">
+                <h2 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">Authentication</h2>
+                <p style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">// authenticate to proceed</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div id="flash-message-container"
+                style="padding: 10px 14px; border-radius: 10px; background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--danger); font-size: 12px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="alert-circle" style="width: 15px; height: 15px;"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.login') }}" id="login-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <input type="hidden" name="role" id="selected-role" value="admin">
+
+                <!-- Role Selector -->
+                <div class="role-selector-container">
+                    <label class="neural-label">ROLE</label>
+                    <div class="role-selector">
+                        <button type="button" class="role-btn active" data-role="admin">
+                            <i data-lucide="shield" style="width:13px;"></i> ADMIN
+                        </button>
+                        <button type="button" class="role-btn" data-role="manager">
+                            <i data-lucide="users" style="width:13px;"></i> MANAGER
+                        </button>
+                        <button type="button" class="role-btn" data-role="employee">
+                            <i data-lucide="user" style="width:13px;"></i> EMPLOYEE
+                        </button>
+                    </div>
+                </div>
+
+                <div class="neural-form-group">
+                    <label class="neural-label">
+                        <span>EMAIL</span>
+                        <span style="font-size:10px; color:var(--text-muted); text-transform:none; font-weight:400;">// Communication Node</span>
+                    </label>
+                    <div class="neural-input-wrap">
+                        <i data-lucide="mail" class="neural-icon-left" style="width: 15px; height: 15px;"></i>
+                        <input type="email" id="email" name="email" class="neural-input" placeholder="admin@excuseai.com" required autofocus>
+                    </div>
+                </div>
+
+                <div class="neural-form-group">
+                    <label class="neural-label">
+                        <span>PASSWORD</span>
+                        <span style="font-size:10px; color:var(--text-muted); text-transform:none; font-weight:400;">// Access Sequence</span>
+                    </label>
+                    <div class="neural-input-wrap">
+                        <i data-lucide="key-round" class="neural-icon-left" style="width: 15px; height: 15px;"></i>
+                        <input type="password" id="password" name="password" class="neural-input" placeholder="••••••••••••" required>
+                        <button type="button" class="neural-toggle" onclick="togglePasswordVisibility()">
+                            <i id="eye-icon" data-lucide="scan-eye" style="width: 15px; height: 15px; color: var(--primary);"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-neural-primary">AUTHENTICATE →</button>
+            </form>
+
+            <div style="margin-top: 24px; text-align: center; font-size: 13px;">
+                <span style="color: var(--text-muted);">Don't have an account?</span>
+                <a href="{{ url_for('auth.register') }}" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-left: 4px;">Register here</a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        // Sync auth theme icons
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const sun = document.getElementById('themeSunIconAuth');
+        const moon = document.getElementById('themeMoonIconAuth');
+        if (sun && moon) {
+            if (currentTheme === 'light') {
+                sun.style.display = 'block';
+                moon.style.display = 'none';
+            } else {
+                sun.style.display = 'none';
+                moon.style.display = 'block';
+            }
+        }
+        
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const roleButtons = document.querySelectorAll('.role-btn');
+        
+        function selectRole(role) {
+            const hiddenRoleInput = document.getElementById('selected-role');
+            if (hiddenRoleInput) hiddenRoleInput.value = role;
+
+            roleButtons.forEach(btn => {
+                if (btn.getAttribute('data-role') === role) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            if (emailInput) {
+                if (role === 'admin') {
+                    emailInput.placeholder = 'admin@excuseai.com';
+                } else if (role === 'manager') {
+                    emailInput.placeholder = 'manager@excuseai.com';
+                } else {
+                    emailInput.placeholder = 'employee@excuseai.com';
+                }
+            }
+            
+            const flashContainer = document.getElementById('flash-message-container');
+            if (flashContainer) flashContainer.style.display = 'none';
+        }
+        
+        roleButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const role = btn.getAttribute('data-role');
+                selectRole(role);
+            });
+        });
+        
+        selectRole('admin');
+    });
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eye-icon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.setAttribute('data-lucide', 'eye');
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+</script>
+{% endblock %}

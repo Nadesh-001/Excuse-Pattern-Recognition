@@ -1,0 +1,140 @@
+/* ============================================================
+   Chatbot UI — glassmorphism and neon utilities
+
+   Colour tokens are extended from the shared token system
+   (see themes.css). No raw hex values for colours that are
+   already tokenised.
+   ============================================================ */
+
+:root {
+    /*
+     * Chatbot accent — maps to the employee-green token family
+     * so both systems stay in sync. Override here if the chatbot
+     * ever gets its own distinct accent colour.
+     */
+    --chat-accent: var(--employee-primary);
+    /* #10b981 */
+    --chat-accent-glow: var(--employee-glow);
+
+    /*
+     * A lighter tint of the accent for gradient endpoints.
+     * color-mix() lightens by blending toward white, removing
+     * the need for a separate hardcoded hex value.
+     */
+    --chat-accent-light: color-mix(in srgb, var(--chat-accent) 55%, white);
+}
+
+
+/* ============================================================
+   Glass panel
+   ============================================================ */
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    /*
+     * backdrop-filter is a visual enhancement only.
+     * Wrapped in @supports so browsers that don't support it
+     * still render the solid background fallback correctly.
+     */
+}
+
+@supports (backdrop-filter: blur(1px)) {
+    .glass-panel {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+}
+
+
+/* ============================================================
+   Neon text and border
+   These extend the pattern from themes.css rather than
+   duplicating it with different class names.
+   ============================================================ */
+
+/*
+ * .neon-text-green is intentionally removed — use .neon-text-employee
+ * from themes.css instead. Having two classes for the same visual
+ * treatment creates a maintenance split.
+ *
+ * If the chatbot accent ever diverges from the employee colour,
+ * add .neon-text-chat here and update --chat-accent above.
+ */
+
+.neon-border-chat {
+    border: 1px solid color-mix(in srgb, var(--chat-accent) 30%, transparent);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--chat-accent) 10%, transparent);
+}
+
+
+/* ============================================================
+   Hero gradient text
+   ============================================================ */
+
+.hero-gradient-text {
+    background: linear-gradient(to right,
+            #ffffff,
+            var(--chat-accent-light));
+    /* Unprefixed property required for Firefox and other non-WebKit browsers. */
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Fallback: browsers that don't support background-clip:text show white text. */
+    color: #ffffff;
+}
+
+
+/* ============================================================
+   Chat container
+   ============================================================ */
+
+.chat-container-premium {
+    /*
+     * Use the shared card background token rather than a hardcoded
+     * near-black value so the container respects theming.
+     * The radial gradient accent is layered on top via a second
+     * background value.
+     */
+    background:
+        radial-gradient(circle at top right,
+            color-mix(in srgb, var(--chat-accent) 5%, transparent),
+            transparent 40%),
+        var(--bg-card);
+}
+
+
+/* ============================================================
+   Accessibility
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    /*
+     * backdrop-filter blur is not animated here, but disabling it
+     * under reduced-motion removes a compositing cost for users
+     * on low-power devices who have opted out of visual effects.
+     */
+    .glass-panel {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    .neon-border-chat {
+        box-shadow: none;
+    }
+
+    .hero-gradient-text {
+        background: linear-gradient(to right, var(--text-main), var(--chat-accent));
+        background-clip: text;
+        -webkit-background-clip: text;
+    }
+
+    .chat-container-premium {
+        background: var(--bg-card);
+    }
+}

@@ -1,0 +1,828 @@
+{% set _is_logged_in = session.get('user_id') is not none %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <title>{% block title %}EXCUSE_AI{% endblock %}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_theme.css') }}?v=4.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=4.0">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}?v=4.0">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Sidebar Navigation Extra styles */
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0;
+            flex-shrink: 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            -webkit-transition: -webkit-transform 0.3s ease;
+            -moz-transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px 20px;
+            border-bottom: 1px solid var(--border-muted);
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-inset);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            position: relative;
+        }
+
+        .logo-text {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--neon-white);
+            letter-spacing: 0.08em;
+        }
+
+        .nav-section {
+            padding: 4px 8px;
+            flex: 1;
+        }
+
+        .nav-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: #ffffff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 8px 8px 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            -webkit-transition: all 0.15s ease;
+            -moz-transition: all 0.15s ease;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 1px;
+            position: relative;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-overlay);
+            color: var(--text-primary);
+            border-color: var(--border-muted);
+        }
+
+        .nav-item.active {
+            background: var(--accent-glow);
+            color: var(--neon-white);
+            border-color: var(--border);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 2px;
+            background: var(--neon-white);
+            border-radius: 2px;
+            box-shadow: 0 0 8px var(--neon-white);
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--bg-inset);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 20px;
+        }
+
+        /* Account Footer */
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--bg-surface);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: inherit;
+            background: var(--bg-surface);
+        }
+
+        .user-card:hover {
+            background: var(--bg-overlay);
+            border-color: var(--border-hover);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px;
+            border-radius: var(--radius-md);
+            color: #f87171;
+            background: rgba(248, 113, 113, 0.04);
+            border: 1px solid rgba(248, 113, 113, 0.15);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        [data-theme="light"] .logout-btn {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.04);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+        }
+
+        .logout-btn:hover {
+            background: rgba(248, 113, 113, 0.08);
+            border-color: #f87171;
+            color: #f87171;
+        }
+
+        [data-theme="light"] .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* --- Status & Priority Utilities --- */
+        .text-pending {
+            color: #e0af68 !important;
+        }
+
+        .text-completed {
+            color: #9ece6a !important;
+        }
+
+        .text-delayed {
+            color: #f7768e !important;
+        }
+
+        .text-high {
+            color: #f7768e !important;
+        }
+
+        .text-medium {
+            color: #e0af68 !important;
+        }
+
+        .text-low {
+            color: #7aa2f7 !important;
+        }
+
+        .text-critical {
+            color: #f7768e !important;
+        }
+
+        .text-warning {
+            color: #e0af68 !important;
+        }
+
+        .bg-critical {
+            background: #f7768e !important;
+            box-shadow: 0 0 15px #f7768e;
+        }
+
+        .bg-warning {
+            background: #e0af68 !important;
+            box-shadow: 0 0 15px #e0af68;
+        }
+
+        .bg-nominal {
+            background: #9ece6a !important;
+            box-shadow: 0 0 15px #9ece6a;
+        }
+
+        .text-nominal {
+            color: #9ece6a !important;
+        }
+
+        .user-card:hover {
+            background: var(--bg-overlay);
+            border-color: var(--border-muted);
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff !important;
+            flex-shrink: 0;
+            font-family: var(--font-mono);
+            box-shadow: var(--glass-shadow);
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-role-text {
+            font-weight: 500;
+        }
+
+        .user-status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 6px #22c55e;
+        }
+        
+        [data-theme="light"] .user-status-dot {
+            background: #16a34a;
+            box-shadow: 0 0 6px #16a34a;
+        }
+
+        /* Topbar */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-breadcrumb {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .topbar-breadcrumb span {
+            color: var(--text-secondary);
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #56d364;
+            box-shadow: 0 0 10px rgba(86, 211, 100, 0.5);
+            margin-right: 8px;
+            flex-shrink: 0;
+            animation: pulse_op 2s infinite;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .btn-topbar-search {
+            background: #1c2128;
+            border: 1px solid #444c56;
+            color: #ffffff;
+            padding: 5px 16px;
+            border-radius: 8px;
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            margin-left: 12px;
+        }
+
+        .btn-topbar-search:hover {
+            background: #2d333b;
+            border-color: #768390;
+            transform: translateY(-1px);
+        }
+
+        .topbar-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 4px 4px 4px 16px;
+            backdrop-filter: blur(8px);
+        }
+
+
+        /* Mobile Menu Toggle button */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            background: var(--bg-inset);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 90;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            -webkit-transition: opacity 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        @keyframes pulse_op {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: flex;
+            }
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            font-size: 13px;
+            color: var(--text-primary);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: toastIn 0.3s ease;
+            border-left: 4px solid var(--neon-blue);
+        }
+
+        .toast-error {
+            border-left-color: var(--neon-red) !important;
+        }
+
+        .toast-success {
+            border-left-color: var(--neon-green) !important;
+        }
+
+        .toast-warning {
+            border-left-color: var(--neon-yellow) !important;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .main-content.full-width {
+            margin-left: 0;
+        }
+
+        /* IE Scrollbar hide */
+        .sidebar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+    <script>
+        // System Compatibility Layer
+        (function () {
+            const features = {
+                'localStorage': !!window.localStorage,
+                'fetch': !!window.fetch,
+                'Promise': !!window.Promise
+            };
+            for (let f in features) {
+                if (!features[f]) {
+                    console.error('SYSTEM_ERROR: Critical module missing [' + f + ']. Interface stability compromised.');
+                }
+            }
+        })();
+
+        // Force Favicon via JS as per user request
+        (function () {
+            function updateFavicon() {
+                let link = document.querySelector("link[rel*='icon']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.type = 'image/x-icon';
+                    link.rel = 'shortcut icon';
+                    document.getElementsByTagName('head')[0].appendChild(link);
+                }
+                link.href = '/favicon.ico?v=6.0';
+            }
+            updateFavicon();
+            // Re-apply after a short delay to beat any other scripts
+            setTimeout(updateFavicon, 1000);
+        })();
+
+        // Tab Session Management for Auto Logout
+        (function () {
+            const isLoggedIn = {{ 'true' if session.get('user_id') else 'false'
+        }};
+        const isAuthPage = {{ 'true' if request.endpoint in ['auth.login', 'auth.register', 'auth.logout']else 'false' }};
+
+        if (isLoggedIn && !isAuthPage) {
+            if (!sessionStorage.getItem('tab_active')) {
+                // New tab but server thinks we are logged in - force regular logout to sync
+                window.location.href = "{{ url_for('auth.logout') }}";
+            }
+        } else if (!isAuthPage) {
+            // Not logged in or on a non-auth page, ensure this tab is marked as active for future logins
+            sessionStorage.setItem('tab_active', 'true');
+        }
+        }) ();
+    </script>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="role-{{ session.get('user_role', 'guest') }}">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="toast-container">
+        {% for category, message in messages %}
+        <div class="toast toast-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        <script>setTimeout(() => { document.querySelectorAll('.toast').forEach(t => t.remove()); }, 5000);</script>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% set _show_sidebar = _is_logged_in and request.endpoint not in ['auth.login', 'auth.register', 'common.index'] %}
+
+    <div class="app-layout">
+        {% if _show_sidebar %}
+        <nav class="sidebar" id="sidebar">
+            <div class="logo-wrap">
+                <div class="logo-icon"
+                    style="background: rgba(86, 211, 100, 0.1); border-color: rgba(86, 211, 100, 0.2);">
+                    <i data-lucide="zap" style="width:16px; color:#56d364; fill:#56d364;"></i>
+                    <span
+                        style="position:absolute; font-size:10px; font-weight:900; color:#fff; right:-2px; bottom:-2px;">E</span>
+                </div>
+                <div>
+                    <div class="logo-text" style="color:var(--primary);">EXCUSE_AI</div>
+                    <div class="logo-badge"
+                        style="font-family:var(--font-mono); font-size:9px; color:var(--text-muted); letter-spacing:0.12em;">
+                        v1.0.0 · Administration Panel</div>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-label">Navigation</div>
+                <a href="{{ url_for('dashboard.dashboard') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'dashboard.dashboard' }}">
+                    <i data-lucide="layout-grid" style="width:16px;"></i> Dashboard
+                </a>
+                <a href="{{ url_for('tasks.tasks') }}"
+                    class="nav-item {{ 'active' if request.endpoint.startswith('tasks.') }}">
+                    <i data-lucide="layers" style="width:16px;"></i> Tasks
+                </a>
+                <a href="{{ url_for('analytics.analytics_overview') }}"
+                    class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('analytics.') }}">
+                    <i data-lucide="line-chart" style="width:16px;"></i> Analytics
+                </a>
+                <a href="{{ url_for('chatbot.chatbot') }}"
+                    class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('chatbot.') }}">
+                    <i data-lucide="message-square-code" style="width:16px;"></i> AI Assistant
+                </a>
+                <a href="{{ url_for('common.universal_search') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'common.universal_search' }}">
+                    <i data-lucide="search" style="width:16px;"></i> Search
+                </a>
+
+                <div class="nav-label" style="margin-top:12px;">Account</div>
+                <a href="{{ url_for('common.profile') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'common.profile' }}">
+                    <i data-lucide="user" style="width:16px;"></i> Profile
+                </a>
+                <a href="{{ url_for('common.settings') }}"
+                    class="nav-item {{ 'active' if request.endpoint == 'common.settings' }}">
+                    <i data-lucide="settings" style="width:16px;"></i> Settings
+                </a>
+                {% if session.get('user_role') in ('main_admin', 'secondary_admin', 'admin') %}
+                <a href="{{ url_for('admin.admin_panel') }}"
+                    class="nav-item {{ 'active' if request.endpoint and request.endpoint.startswith('admin.') }}">
+                    <i data-lucide="shield-check" style="width:16px;"></i> Admin Panel
+                    {% if session.get('user_role') == 'main_admin' %}
+                    <span class="clay-badge" style="margin-left:auto; font-size:10px; background:rgba(251,191,36,.15); color:#d97706;">MAIN</span>
+                    {% else %}
+                    <span class="clay-badge" style="margin-left:auto; font-size:10px;">ADMIN</span>
+                    {% endif %}
+                </a>
+                {% endif %}
+            </div>
+            <div class="sidebar-footer">
+                <a href="{{ url_for('common.profile') }}" class="user-card">
+                    <div class="avatar">
+                        {{ (session.get('user_name') or 'U')[0] | upper }}
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ session.get('user_name', 'User') }}</div>
+                        <div class="user-role">
+                            <span class="user-status-dot"></span>
+                            {% set r = session.get('user_role', '') %}
+                            {% if r == 'main_admin' %}
+                            <span class="user-role-text">Main Admin</span>
+                            {% elif r == 'secondary_admin' %}
+                            <span class="user-role-text">Secondary Admin</span>
+                            {% else %}
+                            <span class="user-role-text">{{ r|title }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width:14px; color:var(--text-muted); margin-left:auto;"></i>
+                </a>
+                <button type="button" class="logout-btn" onclick="openLogoutModal()">
+                    <i data-lucide="log-out" style="width:14px;"></i> Logout
+                </button>
+            </div>
+
+        </nav>
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+        {% endif %}
+
+        <div class="main-content {{ 'full-width' if not _show_sidebar else '' }}">
+            {% if _show_sidebar %}
+            <div class="topbar">
+                <button class="mobile-toggle" onclick="toggleSidebar()">
+                    <i data-lucide="menu" style="width: 20px;"></i>
+                </button>
+                <div class="topbar-breadcrumb">
+                    EXCUSE_AI <span>/</span> <span id="crumb">{% block breadcrumb %}Dashboard{% endblock %}</span>
+                </div>
+                <div class="topbar-actions">
+                    <div class="sync-status" style="margin-left: 0; background: transparent; border: none; padding: 0;">
+                        <div class="pulse-dot"></div>
+                        <span id="sync-val"
+                            style="font-family: var(--font-display); font-size: 13px; font-weight: 600; color: var(--text-primary);">Checking...</span>
+                    </div>
+                    <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light/Dark Mode" onclick="toggleTheme()">
+                        <i data-lucide="sun" id="themeSunIcon" style="width:16px; display:none;"></i>
+                        <i data-lucide="moon" id="themeMoonIcon" style="width:16px;"></i>
+                    </button>
+                    <a href="{{ url_for('common.universal_search') }}" class="btn-topbar-search"
+                        style="margin-left: 8px; background: rgba(57, 211, 242, 0.1); border-color: rgba(57, 211, 242, 0.2); color: var(--primary); padding: 6px 16px;">
+                        <i data-lucide="search"
+                            style="width:14px; display:inline-block; vertical-align:middle; margin-right:6px;"></i>Search
+                    </a>
+                </div>
+                <script>
+                    async function updateSync() {
+                        const start = performance.now();
+                        try {
+                            const res = await fetch('/health');
+                            const end = performance.now();
+                            const latency = Math.round(end - start);
+                            document.getElementById('sync-val').innerText = 'Ready: ' + latency + 'ms';
+                        } catch (e) {
+                            document.getElementById('sync-val').innerText = 'Offline';
+                        }
+                    }
+                    updateSync();
+                    setInterval(updateSync, 120000); 
+                </script>
+            </div>
+            {% endif %}
+
+            <main style="flex:1; overflow-y:auto; background:var(--bg-canvas);">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div id="modal-logout-confirm" class="modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:20px;">
+        <div class="bento-card" style="width:100%; max-width:400px; text-align:center; padding:28px; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--glass-shadow);">
+            <div style="width:48px; height:48px; border-radius:50%; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); display:flex; align-items:center; justify-content:center; color:var(--danger); margin:0 auto 16px;">
+                <i data-lucide="log-out" style="width:22px; height:22px;"></i>
+            </div>
+            <h2 style="color:var(--text-primary); font-size:18px; font-weight:800; margin-bottom:8px; margin-top:0;">Sign out of EXCUSE_AI?</h2>
+            <p style="color:var(--text-muted); font-size:13px; line-height:1.5; margin-bottom:24px;">
+                You will need to authenticate again to access your workspace and AI tools.
+            </p>
+            <div style="display:flex; gap:12px;">
+                <button type="button" class="clay-btn" style="flex:1; padding:10px;" onclick="closeLogoutModal()">Cancel</button>
+                <a href="{{ url_for('auth.logout') }}" class="clay-btn clay-btn-primary" style="flex:1; background:var(--danger) !important; color:#ffffff !important; border:none; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; font-weight:700; padding:10px;">
+                    Sign Out
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', nextTheme);
+            localStorage.setItem('theme', nextTheme);
+            updateThemeIcons(nextTheme);
+        }
+
+        function updateThemeIcons(theme) {
+            const sunIcon = document.getElementById('themeSunIcon');
+            const moonIcon = document.getElementById('themeMoonIcon');
+            if (sunIcon && moonIcon) {
+                if (theme === 'light') {
+                    sunIcon.style.display = 'inline-block';
+                    moonIcon.style.display = 'none';
+                } else {
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'inline-block';
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+            updateThemeIcons(theme);
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('active');
+
+            if (sidebar && sidebar.classList.contains('open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function openLogoutModal() {
+            const m = document.getElementById('modal-logout-confirm');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeLogoutModal() {
+            const m = document.getElementById('modal-logout-confirm');
+            if (m) m.style.display = 'none';
+        }
+
+        if (typeof lucide !== 'undefined') {
+            document.querySelectorAll('.js-width').forEach(el => {
+                const w = el.dataset.width || '0%';
+                setTimeout(() => el.style.width = w, 100);
+            });
+            lucide.createIcons();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Profile - {{ employee.full_name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('team.team_directory') }}"
+        style="text-decoration: none; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+        ← Back to Directory
+    </a>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+    <div>
+        <h1 style="margin: 0;">{{ employee.full_name }}'s Performance</h1>
+        <p style="color: var(--text-muted);">{{ employee.email }} | Role: Employee</p>
+    </div>
+    <div
+        style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 0.5rem 1rem; border-radius: 2rem; color: #10b981; font-weight: 700;">
+        ACTIVE PROFILE
+    </div>
+</div>
+
+<!-- Gauges Grid -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+    <div class="card"
+        style="background: var(--bg-card); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border);">
+        <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-muted); text-align: center;">AUTHENTICITY
+            SIGNAL</h3>
+        <div id="chart-auth" style="height: 300px;"></div>
+    </div>
+    <div class="card"
+        style="background: var(--bg-card); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--border);">
+        <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-muted); text-align: center;">AVOIDANCE INDEX
+        </h3>
+        <div id="chart-avoid" style="height: 300px;"></div>
+    </div>
+</div>
+
+<h2 style="margin-bottom: 1.5rem;">Recent Tasks</h2>
+<div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+    {% for task in tasks %}
+    {% include 'partials/_task_card.html' %}
+    {% else %}
+    <p style="text-align: center; color: var(--text-muted); padding: 3rem;">No tasks found for this employee.</p>
+    {% endfor %}
+</div>
+
+<!-- Plotly Plotting -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script id="gauge-data" type="application/json">
+{{ graphs | tojson | safe }}
+</script>
+<script>
+    function plot(id, data) {
+        if (!data) return;
+        Plotly.newPlot(id, data.data, data.layout, { responsive: true });
+    }
+
+    const graphs = JSON.parse(document.getElementById('gauge-data').textContent);
+    plot('chart-auth', graphs.gauge_auth);
+    plot('chart-avoid', graphs.gauge_avoidance);
+</script>
+
+{% endblock %}

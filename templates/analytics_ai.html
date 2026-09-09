@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}AI Intelligence — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Analytics / AI Intelligence{% endblock %}
+
+{% block extra_head %}
+<style>
+    .analytics-container {
+        padding: 32px 24px;
+        max-width: 1320px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    /* Universal Adaptive AI Hero Panel */
+    .ai-hero-panel {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 48px;
+        text-align: center;
+        margin-bottom: 28px;
+        box-shadow: var(--glass-shadow);
+        position: relative;
+        overflow: hidden;
+        color: var(--text-primary);
+    }
+
+    .score-display {
+        font-family: var(--font-display);
+        font-size: 72px;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+        letter-spacing: -2px;
+        margin-bottom: 8px;
+    }
+
+    .insight-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+    }
+
+    @media (max-width: 992px) {
+        .insight-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .neural-card {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .terminal-box {
+        background: var(--bg-inset);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--text-primary);
+        border-left: 4px solid var(--primary);
+        line-height: 1.6;
+    }
+
+    .signal-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    {% include 'partials/_analytics_nav.html' %}
+
+    <div style="margin-top: 20px; margin-bottom: 28px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h1 style="color:var(--text-primary); font-size:28px; font-weight:800;">Cognitive Intelligence Dashboard</h1>
+            <p style="font-size: 13px; color: var(--text-muted);">Real-time behavioral scoring, executive synthesis, and AI signal detection</p>
+        </div>
+        {% if data.ai %}
+        <span class="clay-badge" style="color:var(--success);">● SYSTEM ACTIVE</span>
+        {% else %}
+        <span class="clay-badge" style="color:var(--text-muted);">○ CALIBRATING</span>
+        {% endif %}
+    </div>
+
+    {% if not data.ai %}
+    <div class="ai-hero-panel" style="padding: 64px 32px;">
+        <div style="width: 56px; height: 56px; border-radius: 18px; background: var(--bg-inset); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--primary);">
+            <i data-lucide="brain-circuit" style="width:28px; height:28px;"></i>
+        </div>
+        <h2 style="color:var(--text-primary); margin-bottom:8px; font-size:22px; font-weight:800;">Insufficient Data for Behavioral Synthesis</h2>
+        <p style="color:var(--text-muted); max-width:440px; margin:0 auto 24px; font-size:14px;">3 or more analyzed excuses are recommended before generating a reliable behavioral summary and intelligence quotient.</p>
+        <a href="{{ url_for('tasks.new_task') }}" class="clay-btn clay-btn-primary">+ Analyze an Excuse</a>
+    </div>
+    {% else %}
+
+    <!-- 1. BEHAVIORAL INTELLIGENCE QUOTIENT (BIQ HERO CARD) -->
+    <div class="ai-hero-panel">
+        <div class="score-display">{{ data.ai.behavioral_intelligence_score }}</div>
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--primary); text-transform:uppercase; letter-spacing:3px; font-weight:700;">
+            BEHAVIORAL INTELLIGENCE QUOTIENT
+        </div>
+
+        <div style="margin-top:20px; display:inline-flex; align-items:center; gap:8px; padding:6px 16px; background:var(--bg-inset); border-radius:20px; font-size:12px; border:1px solid var(--border);">
+            <span style="color:var(--text-primary);">Confidence Rating:</span>
+            <span style="font-weight:800; color:var(--success);">{{ data.ai.confidence.label if data.ai.confidence else 'Nominal' }} ({{ data.ai.confidence.score if data.ai.confidence else 86 }}%)</span>
+        </div>
+    </div>
+
+    <!-- 2. INSIGHT GRID: EXECUTIVE SYNTHESIS + DETECTED SIGNALS -->
+    <div class="insight-grid">
+        <!-- Main: Synthesis & Composition -->
+        <div>
+            <div class="neural-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <i data-lucide="file-text" style="width:18px; color:var(--primary);"></i>
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Executive Synthesis</h3>
+                </div>
+                <div class="terminal-box">
+                    {{ data.executive_summary or "Insufficient data stream for behavioral synthesis. 3 or more analyzed excuses are recommended before generating a reliable behavioral summary." }}
+                </div>
+            </div>
+
+            <div class="neural-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+                    <i data-lucide="pie-chart" style="width:18px; color:var(--primary);"></i>
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Score Composition Matrix</h3>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:16px;">
+                    <div style="padding:16px; background:var(--bg-inset); border-radius:var(--radius-md); border:1px solid var(--border);">
+                        <div style="font-size:11px; font-family:var(--font-mono); color: var(--text-muted); margin-bottom:4px;">Authenticity</div>
+                        <div style="font-size:24px; font-weight:800; color:var(--success);">+{{ data.ai.explainability.auth_component if data.ai.explainability else 0 }}</div>
+                    </div>
+                    <div style="padding:16px; background:var(--bg-inset); border-radius:var(--radius-md); border:1px solid var(--border);">
+                        <div style="font-size:11px; font-family:var(--font-mono); color: var(--text-muted); margin-bottom:4px;">Stability</div>
+                        <div style="font-size:24px; font-weight:800; color:var(--primary);">+{{ data.ai.explainability.risk_component if data.ai.explainability else 0 }}</div>
+                    </div>
+                    <div style="padding:16px; background:var(--bg-inset); border-radius:var(--radius-md); border:1px solid var(--border);">
+                        <div style="font-size:11px; font-family:var(--font-mono); color: var(--text-muted); margin-bottom:4px;">Penalty</div>
+                        <div style="font-size:24px; font-weight:800; color:var(--danger);">-{{ data.ai.explainability.delay_penalty if data.ai.explainability else 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side: Detected Signals & Recognition Feed -->
+        <div>
+            <div class="neural-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+                    <i data-lucide="zap" style="width:18px; color:var(--primary);"></i>
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Detected Signals</h3>
+                </div>
+
+                {% if data.ai.behavior_drift %}
+                <div class="signal-item" style="border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.08);">
+                    <i data-lucide="trending-down" style="width:16px; color:var(--danger);"></i>
+                    <span style="color:var(--danger); font-weight:600;">Drift: {{ data.ai.drift_magnitude }}% Drop</span>
+                </div>
+                {% endif %}
+
+                {% if data.ai.risk_momentum == 'Escalating' %}
+                <div class="signal-item" style="border-color:rgba(251,191,36,0.3); background:rgba(251,191,36,0.08);">
+                    <i data-lucide="zap" style="width:16px; color:var(--warning);"></i>
+                    <span style="color:var(--warning); font-weight:600;">Escalating Momentum</span>
+                </div>
+                {% endif %}
+
+                <div class="signal-item" style="border-color:rgba(52,211,153,0.3); background:rgba(52,211,153,0.08);">
+                    <i data-lucide="check-circle" style="width:16px; color:var(--success);"></i>
+                    <span style="color:var(--success); font-weight:600;">Stable Authentication Baseline</span>
+                </div>
+            </div>
+
+            <!-- Recognition Feed -->
+            <div class="neural-card">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <i data-lucide="activity" style="width:18px; color:var(--primary);"></i>
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Recognition Feed</h3>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between;">
+                        <span>● Sickness excuse pattern</span>
+                        <span style="font-family:var(--font-mono); font-size:11px; color:var(--success);">91% Conf</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between;">
+                        <span>● Repeated delay sequence</span>
+                        <span style="font-family:var(--font-mono); font-size:11px; color:var(--warning);">84% Conf</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between;">
+                        <span>● Avoidance language</span>
+                        <span style="font-family:var(--font-mono); font-size:11px; color:var(--primary);">76% Conf</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

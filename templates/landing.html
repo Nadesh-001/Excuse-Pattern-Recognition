@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}EXCUSE_AI — AI Behavioral Intelligence Platform{% endblock %}
+
+{% block extra_head %}
+<!-- Landing Page Specific Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/neural_landing.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+    <div class="wrapper">
+        
+        <!-- 1. TOP NAVIGATION HEADER -->
+        <nav class="landing-nav">
+            <div class="logo">
+                <div class="logo-dot"></div>
+                <span style="font-family:var(--font-display); font-weight:800; font-size:18px; color:var(--text-primary);">EXCUSE_AI</span>
+            </div>
+            
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Product</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#use-cases" class="nav-link">Use Cases</a>
+            </div>
+
+            <div class="nav-actions">
+                <button id="themeToggleBtnLanding" class="theme-toggle-btn" title="Toggle Light/Dark Mode" onclick="toggleTheme()">
+                    <i data-lucide="sun" id="themeSunIconLanding" style="width:16px; display:none;"></i>
+                    <i data-lucide="moon" id="themeMoonIconLanding" style="width:16px;"></i>
+                </button>
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard.dashboard') }}" class="clay-btn clay-btn-primary">Dashboard →</a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="nav-link" style="font-weight:600;">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="clay-btn clay-btn-primary">Get Started →</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <!-- 2. HERO SECTION -->
+        <section class="hero-section">
+            <div class="hero-left">
+                <div class="hero-eyebrow">
+                    <span class="eyebrow-line"></span>
+                    BEHAVIORAL INTELLIGENCE PLATFORM
+                </div>
+                <h1 class="hero-title">
+                    Detect patterns.<br>
+                    <span class="gradient-text">Uncover truth.</span>
+                </h1>
+                <p class="hero-desc">
+                    Analyze excuses, identify behavioral patterns, and turn workplace signals into actionable intelligence.
+                </p>
+                
+                <div class="cta-group">
+                    {% if session.get('user_id') %}
+                    <a href="{{ url_for('dashboard.dashboard') }}" class="clay-btn clay-btn-primary" style="padding: 14px 28px; font-size: 15px;">
+                        Open Dashboard <i data-lucide="arrow-right" style="width:16px;"></i>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.register') }}" class="clay-btn clay-btn-primary" style="padding: 14px 28px; font-size: 15px;">
+                        Get Started <i data-lucide="arrow-right" style="width:16px;"></i>
+                    </a>
+                    {% endif %}
+                    <a href="#features" class="clay-btn" style="padding: 14px 24px; font-size: 15px;">
+                        Explore Platform →
+                    </a>
+                </div>
+
+                <div class="trust-row">
+                    <span>✓ AI-Powered Analysis</span>
+                    <span>✓ Pattern Recognition</span>
+                    <span>✓ Real-time Insights</span>
+                </div>
+            </div>
+
+            <!-- FLOATING AI PRODUCT TELEMETRY PREVIEW -->
+            <div class="hero-right">
+                <div class="product-preview-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="cpu" style="width:18px; color:var(--primary);"></i>
+                            <span style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">EXCUSE_AI / AI Intelligence</span>
+                        </div>
+                        <span class="clay-badge" style="color:var(--success);">LIVE DIAGNOSTIC</span>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">BEHAVIORAL SCORE</div>
+                        <div style="font-size: 44px; font-weight: 900; font-family: var(--font-display); color: var(--text-primary); margin-top: 2px;">
+                            82.4 <span style="font-size: 14px; font-weight: 700; color: var(--success);">↑ 8.2%</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span style="color: var(--text-muted);">Pattern Detection Vectors</span>
+                            <span style="font-weight: 700; color: var(--primary);">91% Confidence</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: var(--bg-inset); border-radius: 10px; overflow: hidden; border: 1px solid var(--border);">
+                            <div style="width: 91%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 10px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;">
+                        <div style="padding: 12px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                            <div style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">RISK LEVEL</div>
+                            <div style="font-size: 14px; font-weight: 800; color: var(--success); margin-top: 2px;">LOW</div>
+                        </div>
+                        <div style="padding: 12px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                            <div style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">CONFIDENCE</div>
+                            <div style="font-size: 14px; font-weight: 800; color: var(--primary); margin-top: 2px;">91.0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. HOW IT WORKS SECTION -->
+        <section id="how-it-works" class="how-section">
+            <div class="section-title-wrap">
+                <div class="clay-badge" style="color: var(--primary); margin-bottom: 12px;">WORKFLOW PIPELINE</div>
+                <h2>How EXCUSE_AI Works</h2>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">01</div>
+                    <h3>Submit</h3>
+                    <p>Enter an excuse statement or task delay notification into the system.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">02</div>
+                    <h3>Analyze</h3>
+                    <p>AI identifies linguistic heuristics, hedging terms, and behavioral patterns.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">03</div>
+                    <h3>Detect</h3>
+                    <p>Risk factors, authenticity scores, and avoidance signals are evaluated.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">04</div>
+                    <h3>Understand</h3>
+                    <p>Receive actionable workforce intelligence and strategic recommendations.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. BENTO GRID FEATURE SECTION -->
+        <section id="features" class="features-section">
+            <div class="section-title-wrap">
+                <div class="clay-badge" style="color: var(--primary); margin-bottom: 12px;">SYSTEM CAPABILITIES</div>
+                <h2>Intelligence Features</h2>
+            </div>
+
+            <div class="bento-grid">
+                <div class="bento-card bento-span-8">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                        <i data-lucide="layers" style="width:20px; color:var(--primary);"></i>
+                        <h3 style="font-size:18px;">Pattern Recognition AI</h3>
+                    </div>
+                    <p style="color:var(--text-secondary); margin-bottom:16px; font-size:14px; line-height:1.6;">Detect recurring behavioral delay patterns automatically across individuals and teams with TF-IDF cosine similarity vectors.</p>
+                    <span class="clay-badge" style="width:fit-content;">Linguistic Heuristics</span>
+                </div>
+
+                <div class="bento-card bento-span-4">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                        <i data-lucide="shield-alert" style="width:20px; color:var(--warning);"></i>
+                        <h3 style="font-size:18px;">Risk Detection Engine</h3>
+                    </div>
+                    <p style="color:var(--text-secondary); margin-bottom:16px; font-size:14px; line-height:1.6;">Identify suspicious delay sequences, risk escalation velocity, and avoidance language flags.</p>
+                    <span class="clay-badge" style="width:fit-content; color:var(--warning);">Signal Scoring</span>
+                </div>
+
+                <div class="bento-card bento-span-4">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                        <i data-lucide="line-chart" style="width:20px; color:var(--success);"></i>
+                        <h3 style="font-size:18px;">Behavioral Analytics</h3>
+                    </div>
+                    <p style="color:var(--text-secondary); margin-bottom:16px; font-size:14px; line-height:1.6;">Track authenticity vs avoidance trends over time with longitudinal date series.</p>
+                    <span class="clay-badge" style="width:fit-content; color:var(--success);">Temporal Tracking</span>
+                </div>
+
+                <div class="bento-card bento-span-8">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                        <i data-lucide="bot" style="width:20px; color:var(--primary);"></i>
+                        <h3 style="font-size:18px;">AI Assistant & Diagnostics</h3>
+                    </div>
+                    <p style="color:var(--text-secondary); margin-bottom:16px; font-size:14px; line-height:1.6;">Ask questions about your detected delay patterns, query risk scores, and receive instant diagnostic task advice.</p>
+                    <span class="clay-badge" style="width:fit-content;">Natural Language Chat</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. FINAL CTA BANNER -->
+        <section class="cta-banner">
+            <div class="bento-card" style="text-align:center; padding: 56px 24px;">
+                <h2 style="font-size:32px; font-weight:800; margin-bottom:12px; color:var(--text-primary);">Ready to analyze excuse patterns?</h2>
+                <p style="color:var(--text-muted); max-width:480px; margin:0 auto 28px; font-size:14px;">Transform unstructured workplace delay statements into structured behavioral intelligence.</p>
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard.dashboard') }}" class="clay-btn clay-btn-primary" style="padding:14px 32px; font-size:15px;">
+                    Open Dashboard →
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.register') }}" class="clay-btn clay-btn-primary" style="padding:14px 32px; font-size:15px;">
+                    Get Started →
+                </a>
+                {% endif %}
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        // Sync landing page theme icons
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const sun = document.getElementById('themeSunIconLanding');
+        const moon = document.getElementById('themeMoonIconLanding');
+        if (sun && moon) {
+            if (currentTheme === 'light') {
+                sun.style.display = 'block';
+                moon.style.display = 'none';
+            } else {
+                sun.style.display = 'none';
+                moon.style.display = 'block';
+            }
+        }
+    });
+</script>
+{% endblock %}

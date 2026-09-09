@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account — EXCUSE_AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .auth-container {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        position: relative;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 660px;
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 36px 40px;
+        box-shadow: var(--glass-shadow);
+        animation: cardRise 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        color: var(--text-primary);
+    }
+
+    @keyframes cardRise {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .section-divider {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin: 24px 0 14px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        .auth-card {
+            padding: 24px 20px;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .neural-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .neural-input-wrap {
+        position: relative;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+    }
+
+    .neural-input-wrap:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+    }
+
+    .neural-input,
+    .neural-select {
+        width: 100%;
+        background: transparent;
+        border: none;
+        padding: 12px 14px;
+        color: var(--text-primary);
+        font-size: 13px;
+        outline: none;
+        font-family: var(--font-body);
+    }
+
+    .neural-select {
+        appearance: none;
+        cursor: pointer;
+    }
+
+    .neural-select option {
+        background: var(--bg-surface);
+        color: var(--text-primary);
+    }
+
+    .pwd-requirements {
+        display: flex;
+        gap: 12px;
+        font-size: 11px;
+        font-family: var(--font-mono);
+        color: var(--text-muted);
+        margin-top: 6px;
+        flex-wrap: wrap;
+    }
+
+    .pwd-req-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .pwd-req-item.valid {
+        color: var(--success);
+    }
+
+    .btn-neural-primary {
+        width: 100%;
+        padding: 14px;
+        background: var(--primary);
+        border: none;
+        border-radius: var(--radius-md);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 24px;
+        box-shadow: var(--clay-shadow);
+    }
+
+    .btn-neural-primary:hover {
+        opacity: 0.92;
+        transform: translateY(-1px);
+    }
+
+    .auth-footer {
+        margin-top: 24px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .auth-link {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .auth-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 28px;">
+            <div style="font-family: var(--font-mono); font-size: 12px; color: var(--primary); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;">
+                ⚡ EXCUSE_AI
+            </div>
+            <h1 style="font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px 0;">Create your account</h1>
+            <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Join the behavioral intelligence network</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <!-- Profile Photo Area -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; background: var(--bg-inset); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 20px;">
+                <div id="avatar-preview" style="width: 72px; height: 72px; border-radius: 50%; background: var(--clay-bg); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: var(--clay-shadow);">
+                    <i data-lucide="user" style="width: 28px; height: 28px; color: var(--text-muted);"></i>
+                </div>
+                <input type="file" name="avatar" id="avatar-input" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="previewImage(this)">
+                <div style="text-align: center;">
+                    <button type="button" class="clay-btn" style="padding: 6px 14px; font-size: 12px; cursor: pointer;" onclick="document.getElementById('avatar-input').click()">
+                        <i data-lucide="camera" style="width: 13px;"></i> Upload Profile Photo
+                    </button>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: var(--font-mono);">
+                        JPG, PNG or WEBP · Max 5 MB
+                    </div>
+                </div>
+            </div>
+
+            <!-- IDENTITY -->
+            <div class="section-divider">IDENTITY</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="neural-label"><i data-lucide="user" style="width: 13px;"></i> Full Name</label>
+                    <div class="neural-input-wrap">
+                        <input type="text" name="full_name" class="neural-input" placeholder="Alex Morgan" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="neural-label"><i data-lucide="phone" style="width: 13px;"></i> Phone</label>
+                    <div class="neural-input-wrap">
+                        <input type="text" name="phone" class="neural-input" placeholder="+1 (555) 019-2834" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTACT & SECURITY -->
+            <div class="section-divider">CONTACT & SECURITY</div>
+            <div class="form-group">
+                <label class="neural-label"><i data-lucide="mail" style="width: 13px;"></i> Email Address</label>
+                <div class="neural-input-wrap">
+                    <input type="email" name="email" class="neural-input" placeholder="user@excuseai.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="neural-label"><i data-lucide="lock" style="width: 13px;"></i> Password</label>
+                <div class="neural-input-wrap" style="display:flex; align-items:center;">
+                    <input type="password" id="password" name="password" class="neural-input" placeholder="••••••••" minlength="8" required oninput="validatePwd(this.value)">
+                    <button type="button" onclick="togglePasswordVisibility()" style="background:transparent; border:none; padding:0 12px; color:var(--text-muted); cursor:pointer;">
+                        <i id="eye-icon" data-lucide="eye" style="width: 15px;"></i>
+                    </button>
+                </div>
+                <div class="pwd-requirements">
+                    <span id="req-len" class="pwd-req-item">✓ 8+ characters</span>
+                    <span id="req-upper" class="pwd-req-item">✓ One uppercase letter</span>
+                    <span id="req-num" class="pwd-req-item">✓ One number</span>
+                </div>
+            </div>
+
+            <!-- PROFESSIONAL PROFILE -->
+            <div class="section-divider">PROFESSIONAL PROFILE</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="neural-label"><i data-lucide="shield" style="width: 13px;"></i> Role</label>
+                    <div class="neural-input-wrap">
+                        <select name="role" class="neural-select">
+                            <option value="employee">Employee</option>
+                            <option value="manager">Manager</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="neural-label"><i data-lucide="briefcase" style="width: 13px;"></i> Job Title</label>
+                    <div class="neural-input-wrap">
+                        <input type="text" name="job_role" class="neural-input" placeholder="e.g. Senior Analyst">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="neural-label"><i data-lucide="info" style="width: 13px;"></i> About You</label>
+                <div class="neural-input-wrap">
+                    <textarea name="bio" class="neural-input" placeholder="Briefly describe your role and expertise..." rows="2" style="resize: vertical; min-height: 60px;"></textarea>
+                </div>
+            </div>
+
+            <!-- LOCATION -->
+            <div class="section-divider">LOCATION</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="neural-label"><i data-lucide="globe" style="width: 13px;"></i> Country</label>
+                    <div class="neural-input-wrap">
+                        <input type="text" name="country" class="neural-input" placeholder="United States">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="neural-label"><i data-lucide="map-pin" style="width: 13px;"></i> City</label>
+                    <div class="neural-input-wrap">
+                        <input type="text" name="city" class="neural-input" placeholder="New York">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="neural-label"><i data-lucide="hash" style="width: 13px;"></i> Postal Code</label>
+                <div class="neural-input-wrap">
+                    <input type="text" name="postal_code" class="neural-input" placeholder="10001">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-neural-primary">
+                Create Account →
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Already registered? <a href="{{ url_for('auth.login') }}" class="auth-link">Log in</a>
+            <div style="margin-top: 16px;">
+                <a href="{{ url_for('common.index') }}" style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); text-decoration: none;">
+                    ← Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    function previewImage(input) {
+        const preview = document.getElementById('avatar-preview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;">';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eye-icon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.setAttribute('data-lucide', 'eye');
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function validatePwd(val) {
+        const lenEl = document.getElementById('req-len');
+        const upperEl = document.getElementById('req-upper');
+        const numEl = document.getElementById('req-num');
+
+        if (lenEl) lenEl.classList.toggle('valid', val.length >= 8);
+        if (upperEl) upperEl.classList.toggle('valid', /[A-Z]/.test(val));
+        if (numEl) numEl.classList.toggle('valid', /[0-9]/.test(val));
+    }
+</script>
+{% endblock %}

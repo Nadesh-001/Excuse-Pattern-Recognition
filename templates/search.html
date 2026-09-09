@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Neural_Search — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Search / Patterns{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --search-accent: #39d3f2;
+        --search-bg: rgba(13, 17, 23, 0.85);
+        --search-border: rgba(255, 255, 255, 0.08);
+    }
+
+    .search-container {
+        padding: 40px 32px;
+        max-width: 1000px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .glass-search-card {
+        background: var(--bg-surface);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 32px;
+        margin-bottom: 32px;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .search-input {
+        width: 100%;
+        background: var(--bg-inset) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: var(--radius-md);
+        color: var(--text-primary) !important;
+        padding: 14px 16px 14px 52px !important;
+        font-size: 15px;
+        font-family: var(--font-body);
+        outline: none;
+        transition: all 0.3s;
+    }
+
+    .search-input:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15) !important;
+    }
+
+    .filter-pills {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 4px 0;
+        margin-top: 16px;
+    }
+
+    .filter-pill {
+        padding: 6px 14px;
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .filter-pill:hover {
+        background: var(--bg-overlay);
+        border-color: var(--border-hover);
+        color: var(--text-primary);
+    }
+
+    .result-section {
+        margin-bottom: 32px;
+    }
+
+    .section-header {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .neural-result-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.2s;
+        text-decoration: none;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .neural-result-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+    }
+
+    .result-title {
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div style="margin-bottom: 28px;">
+        <h1 style="color:var(--text-primary); font-size:28px; font-weight:800;">Universal Search Engine</h1>
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted); text-transform:uppercase;">UNIVERSAL_PATTERN_RECOGNITION // SYSTEM_QUERY</div>
+    </div>
+
+    <div class="glass-search-card">
+        <form action="{{ url_for('common.universal_search') }}" method="GET">
+            <div style="display: flex; gap: 12px; align-items: stretch;">
+                <div class="neural-input-wrap">
+                    <i data-lucide="search"
+                        style="position:absolute; left:18px; top:50%; transform:translateY(-50%); width:18px; color:var(--text-muted); z-index:5;"></i>
+                    <input type="text" name="q" class="search-input" value="{{ query }}"
+                        placeholder="Search tasks, delay records, or team users...">
+                </div>
+                <button type="submit" class="clay-btn clay-btn-primary" style="padding:0 28px;">
+                    Search
+                </button>
+            </div>
+
+            <div class="filter-pills">
+                {% for filter in ['Pending', 'Completed', 'High Risk', 'Weather', 'Network', 'Health'] %}
+                <div class="filter-pill" onclick="setQuery('{{ filter }}')">{{ filter }}</div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+
+    {% if not query %}
+    <div style="text-align: center; padding: 60px 20px;">
+        <div class="section-header" style="justify-content: center; margin-bottom: 24px;">Trending Searches</div>
+        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            {% if trending %}
+            {% for term in trending %}
+            <a href="{{ url_for('common.universal_search', q=term) }}" class="filter-pill"
+                style="background: rgba(57, 211, 242, 0.05); border-color: rgba(57, 211, 242, 0.1); color: var(--search-accent); padding: 8px 20px;">
+                <i data-lucide="zap" style="width:12px; margin-right:4px; vertical-align:middle;"></i> {{ term }}
+            </a>
+            {% endfor %}
+            {% else %}
+            <div class="panel-label" style="font-size: 12px;">Buffer processing... Start typing to initialize search.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+
+    <div style="margin-bottom: 32px; display: flex; align-items: center; gap: 12px;">
+        <span class="panel-label">RESULTS_FOR:</span>
+        <span style="color: var(--search-accent); font-family:var(--font-mono); font-weight:700;">"{{ query }}"</span>
+    </div>
+
+    <!-- USERS RESULTS -->
+    {% if users %}
+    <div class="result-section">
+        <div class="section-header"><i data-lucide="users" style="width:14px;"></i> Users</div>
+        <div class="result-grid">
+            {% for u in users %}
+            <div class="neural-result-card">
+                <div class="result-icon"><i data-lucide="user" style="color: var(--search-accent);"></i></div>
+                <div class="result-info">
+                    <div class="result-title">{{ u.full_name }}</div>
+                    <div class="result-meta">{{ u.role|upper }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- TASKS RESULTS -->
+    {% if tasks %}
+    <div class="result-section">
+        <div class="section-header"><i data-lucide="layers" style="width:14px;"></i> Node_Protocols</div>
+        <div style="display: grid; gap: 12px;">
+            {% for t in tasks %}
+            <a href="{{ url_for('tasks.task_details', task_id=t.id) }}" class="neural-result-card"
+                style="border-left: 3px solid var(--search-accent);">
+                <div class="result-info">
+                    <div class="result-title">{{ t.title }}</div>
+                    <div class="result-meta">{{ t.description|truncate(120) }}</div>
+                </div>
+                <span
+                    class="role-badge role-{{ 'admin' if t.status == 'Delayed' else ('employee' if t.status in ['Completed', 'In Progress'] else 'manager') }}"
+                    style="font-size: 10px;">
+                    {{ t.status|upper }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- DELAYS RESULTS -->
+    {% if delays %}
+    <div class="result-section">
+        <div class="section-header"><i data-lucide="alert-triangle" style="width:14px;"></i> Anomaly_Analysis</div>
+        <div style="display: grid; gap: 12px;">
+            {% for d in delays %}
+            {% set risk_slug = d.risk_level|lower %}
+            <div class="neural-result-card risk-{{ risk_slug }}"
+                style="border-left-width: 3px; border-left-style: solid;">
+                <div class="result-info">
+                    <div class="result-title">{{ d.task_title }}</div>
+                    <div class="result-meta" style="font-style: italic; color: #fff;">"{{ d.reason_text }}"</div>
+                </div>
+                <div class="risk-{{ risk_slug }}"
+                    style="font-family: var(--font-mono); font-size: 10px; font-weight: 800;">
+                    RISK: {{ d.risk_level|upper }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not tasks and not delays and not users %}
+    <div
+        style="text-align: center; padding: 60px; background: rgba(255,255,255,0.01); border: 1px dashed var(--search-border); border-radius: 24px;">
+        <i data-lucide="search-x" style="width:40px; height:40px; color:#ffffff; margin-bottom:16px;"></i>
+        <div class="panel-label">NO_RESULTS_IN_BUFFER</div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<script>
+    function setQuery(text) {
+        const input = document.querySelector('input[name="q"]');
+        input.value = text;
+        input.form.submit();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+{% endblock %}

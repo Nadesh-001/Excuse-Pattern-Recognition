@@ -1,0 +1,49 @@
+<nav class="dashboard-nav">
+    {% if session.get('user_role') == 'manager' or session.get('user_role') == 'admin' %}
+    <a href="{{ url_for('dashboard.dashboard') }}"
+        class="dashboard-tab {{ 'active' if request.endpoint == 'dashboard.dashboard' }}">
+        📊 Dashboard
+    </a>
+    {% else %}
+    <a href="{{ url_for('dashboard.dashboard') }}"
+        class="dashboard-tab {{ 'active' if request.endpoint == 'dashboard.dashboard' }}">
+        📋 My Tasks
+    </a>
+    <a href="{{ url_for('analytics.analytics_root') }}"
+        class="dashboard-tab {{ 'active' if 'analytics' in request.endpoint }}">
+        📈 My Analytics
+    </a>
+    <a href="{{ url_for('chatbot.chatbot') }}"
+        class="dashboard-tab {{ 'active' if request.endpoint == 'chatbot.chatbot' }}">
+        💬 AI Assistant
+    </a>
+    {% endif %}
+</nav>
+
+<style>
+    /* Temporary inline styles in case CSS load is delayed */
+    .dashboard-nav {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dashboard-tab {
+        text-decoration: none;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 0.75rem 0;
+        border-bottom: 3px solid transparent;
+        transition: 0.2s;
+    }
+
+    .dashboard-tab.active {
+        color: #fff;
+        border-bottom-color: var(--primary);
+    }
+
+    .dashboard-tab:hover {
+        color: #fff;
+    }
+</style>

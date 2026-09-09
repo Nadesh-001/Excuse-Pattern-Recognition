@@ -1,0 +1,42 @@
+# EXCUSE PATTERN RECOGNITION AI (EPAI)
+# Project Definition & Technical Overview
+
+## 1. PROJECT CONCEPT
+The Excuse Pattern Recognition AI (EPAI) is a sophisticated, AI-powered task management and behavioral analytics platform. It goes beyond standard task tracking by using machine learning and natural language processing (NLP) to monitor employee performance and validate the authenticity of delay reasons.
+
+## 2. KEY FEATURES
+### 🧠 Five Core AI Features
+1. **Semantic Excuse Analysis (NLP):** Uses TF-IDF vectorization and Cosine similarity to detect repetitive excuses, even when phrased differently.
+2. **Delay Risk Prediction (ML):** Uses Logistic Regression to predict future delay probability (High/Low risk) based on historical patterns.
+3. **Anomaly Detection:** Employs the Isolation Forest algorithm to detect sudden behavioral changes or outliers in delay patterns.
+4. **Time-Decay Trust Scoring:** Recent behavior is weighted higher than old behavior using an exponential decay formula: weight = exp(-0.05 × days_old).
+5. **WRS - Behavioral Reliability Score:** A composite metric (60% Authenticity, 30% Risk, 10% Stability) that provides a single reliability "credit score" for users.
+
+### 💼 Role-Based Access Control (RBAC)
+- **Admin:** Full system access, user management, global analytics, and "Neural Sensitivity" adjustment.
+- **Manager:** Team oversight, performance analytics, and report generation for team members.
+- **Employee:** Personal task management, "Signal Anomaly" submissions, and personal AI reports.
+
+### 🎨 Modern UI & Experience
+- **Neural Glassmorphism:** A premium design style with frosted-glass effects and dynamic gradients.
+- **Interactive Dashboards:** Visual KPIs using Plotly.js for real-time tracking.
+- **Automated Reporting:** Professional A4-style PDF/Word reports with AI-generated behavioral conclusions.
+
+## 3. TECHNOLOGY STACK
+### Backend
+- **Framework:** Flask (Python 3.11)
+- **Database:** PostgreSQL (via Supabase)
+- **AI/ML:** scikit-learn, NumPy, Joblib
+- **LLM:** Groq LLaMA-3.3-70B (for executive summaries)
+- **Worker:** Redis/RQ (Async background processing)
+
+### Frontend
+- **Templating:** Jinja2
+- **Visualization:** Plotly.js
+- **Styling:** Custom CSS (Modern Gradients & Glassmorphism)
+
+## 4. ACADEMIC & PROFESSIONAL VALUE
+EPAI is designed as a high-end academic demonstration of applied AI. It focuses on "Explainable AI" (XAI), providing clear reasons for its verdicts, and emphasizes speed, offline capability, and enterprise-grade security (Row Level Security & Audit Logging).
+
+---
+© 2026 Excuse Pattern AI Intelligence Engine v9.5

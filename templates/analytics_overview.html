@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% set stats = stats | default({}, true) %}
+{% set ai_data = stats.get('ai', {}) %}
+{% set exec_sum = ai_data.get('structured_executive_summary', {}) %}
+{% set v1_intel = ai_data.get('v1_intelligence', {}) %}
+{% set insights = stats.get('ai_insights', []) %}
+
+{% block title %}Analytics Overview — EXCUSE_AI{% endblock %}
+{% block breadcrumb %}Analytics / Overview{% endblock %}
+
+{% block extra_head %}
+<style>
+    .analytics-container {
+        padding: 32px 24px;
+        max-width: 1320px;
+        margin: 0 auto;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    .analytics-header {
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .analytics-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+
+    <!-- Sub-navigation -->
+    {% include "partials/_analytics_nav.html" %}
+
+    <!-- Header -->
+    <div class="analytics-header">
+        <div>
+            <h1>Behavioral Analytics Console</h1>
+            <p style="font-size: 13px; color: var(--text-muted);">Real-time natural language processing, TF-IDF cosine authenticity metrics, and delay risk distribution</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <span class="clay-badge"><i data-lucide="activity" style="width:12px; color:var(--primary);"></i> Realtime Data Engine</span>
+        </div>
+    </div>
+
+    <!-- Bento Grid (50% Layout, 35% Glass Cards, 15% Clay Badges) -->
+    <div class="bento-grid">
+
+        <!-- Executive Summary Bento Card (Span 8) -->
+        <div class="bento-card bento-span-8">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="cpu" style="width:18px; color:var(--primary);"></i>
+                    <h3 style="font-size: 16px;">Executive Behavioral Summary</h3>
+                </div>
+                <span class="clay-badge">AI Synthesis</span>
+            </div>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+                {{ exec_sum.get('headline') or "Behavioral patterns show stable workforce authenticity. Temporal drift vectors remain within acceptable operational bounds across active project teams." }}
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: auto;">
+                <div style="padding: 12px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                    <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">TOTAL SUBMISSIONS</div>
+                    <div style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ stats.get('total_delays', 0) }}</div>
+                </div>
+                <div style="padding: 12px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                    <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">AVG AUTHENTICITY</div>
+                    <div style="font-size: 20px; font-weight: 800; color: var(--success); margin-top: 4px;">{{ stats.get('avg_authenticity', 90.0)|round(1) }}%</div>
+                </div>
+                <div style="padding: 12px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                    <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">RISK INCIDENTS</div>
+                    <div style="font-size: 20px; font-weight: 800; color: var(--danger); margin-top: 4px;">{{ stats.get('risk_distribution', {}).get('High', 0) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authenticity Index Card (Span 4) -->
+        <div class="bento-card bento-span-4">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <i data-lucide="shield-check" style="width:18px; color:var(--success);"></i>
+                <h3 style="font-size: 16px;">Authenticity Score</h3>
+            </div>
+            <div style="font-size: 36px; font-family: var(--font-mono); font-weight: 800; color: var(--success); text-align: center; margin: 16px 0;">
+                {{ stats.get('avg_authenticity', 90.0)|round(1) }}%
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 16px;">
+                Calculated across cosine similarity & TF-IDF text repetition vectors.
+            </div>
+            <div class="clay-badge" style="margin-top: auto; margin-left: auto; margin-right: auto;">
+                Baseline Normal
+            </div>
+        </div>
+
+        <!-- AI Insights & Recommendations (Span 12) -->
+        <div class="bento-card bento-hero">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+                <i data-lucide="zap" style="width:18px; color:var(--warning);"></i>
+                <h3 style="font-size: 16px;">Strategic Behavioral Action Items</h3>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                {% if insights %}
+                    {% for insight in insights %}
+                    <div style="padding: 16px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start;">
+                        <i data-lucide="check-circle-2" style="width:16px; color:var(--success); flex-shrink:0; margin-top:2px;"></i>
+                        <span style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">{{ insight.text }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="padding: 16px; background: var(--bg-inset); border-radius: var(--radius-md); border: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start;">
+                        <i data-lucide="check-circle-2" style="width:16px; color:var(--success); flex-shrink:0; margin-top:2px;"></i>
+                        <span style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">All team delay reports remain within standard variance thresholds.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+{% endblock %}

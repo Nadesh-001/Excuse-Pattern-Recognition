@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Team Directory{% endblock %}
+
+{% block content %}
+{% include 'partials/_dashboard_tabs.html' %}
+
+<h1 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+    👥 Employee Directory
+</h1>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+    {% for emp in employees %}
+    <div class="card neon-border-{{ 'admin' if emp.risk_level == 'High' else ('manager' if emp.risk_level == 'Medium' else 'employee') }}"
+        style="background: var(--bg-card); padding: 2rem; border-radius: 1rem; position: relative;">
+
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+            <div
+                style="width: 50px; height: 50px; background: rgba(255,255,255,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                👤
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.4rem;">{{ emp.full_name }}</h3>
+                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">{{ emp.email }}</p>
+            </div>
+        </div>
+
+        <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; text-align: center;">
+            <div
+                style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+                <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Authenticity</div>
+                {% set auth_class = 'text-success' if emp.avg_auth > 75 else ('text-warning' if emp.avg_auth > 45 else
+                'text-danger') %}
+                <div class="{{ auth_class }}" style="font-size: 1.5rem; font-weight: 800;">
+                    {{ emp.avg_auth }}%
+                </div>
+            </div>
+            <div
+                style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+                <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Total Delays</div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--manager-blue);">
+                    {{ emp.delay_count }}
+                </div>
+            </div>
+        </div>
+
+        <a href="{{ url_for('team.employee_profile', user_id=emp.id) }}" class="btn-primary"
+            style="display: block; text-align: center; text-decoration: none;">
+            View Detailed Profile
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
